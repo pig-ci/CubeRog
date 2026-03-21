@@ -1,0 +1,293 @@
+/* --- 基礎設定 --- */
+body { 
+    margin: 0; 
+    background: #0a0a0a; 
+    overflow: hidden; 
+    color: white; 
+    font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif; 
+    user-select: none;
+}
+
+canvas { display: block; }
+
+/* --- 遊戲內 UI (戰鬥中) --- */
+#game-ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#ui { 
+    position: absolute; 
+    top: 25px; 
+    left: 20px; 
+}
+
+.player-name {
+    font-size: 18px; 
+    color: #00d2ff; 
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+}
+
+#timer-container { 
+    position: absolute; 
+    top: 35px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    font-size: 28px; 
+    font-weight: bold; 
+    color: #fff; 
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+#exp-bar-container {
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 10px; 
+    background: #222; 
+}
+
+#exp-fill { 
+    height: 100%; 
+    width: 0%; 
+    background: #00d2ff; 
+    transition: 0.1s; 
+    box-shadow: 0 0 15px #00d2ff;
+}
+
+.hp-bar-outer { 
+    background: #333; 
+    width: 200px; 
+    height: 14px; 
+    border-radius: 7px; 
+    overflow: hidden; 
+    margin: 8px 0;
+    border: 1px solid #444;
+}
+
+#hp-fill { 
+    background: linear-gradient(90deg, #ff4d4d, #ff8080); 
+    width: 100%; 
+    height: 100%; 
+    transition: 0.2s;
+}
+
+/* --- 主首頁 (分欄式) --- */
+#home-screen {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-bar {
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: flex-end;
+    border-bottom: 1px solid #1e293b;
+}
+
+.currency {
+    color: #ffd700;
+    font-size: 20px;
+    font-weight: bold;
+    background: rgba(255, 215, 0, 0.1);
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+#content-area {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tab-content {
+    width: 100%;
+    max-width: 500px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.game-title {
+    text-align: center;
+    font-size: 48px;
+    margin: 20px 0;
+    letter-spacing: 4px;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+}
+
+/* 戰役卡片 */
+.stage-card {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.stage-info h3 { font-size: 24px; margin-bottom: 10px; color: #00d2ff; }
+.stage-info p { color: #94a3b8; margin-bottom: 25px; }
+
+.last-stats {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    font-size: 14px;
+    color: #cbd5e1;
+}
+
+/* 強化卡片 */
+.upgrade-container { width: 100%; }
+.upgrade-card {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.upgrade-icon { font-size: 40px; margin-right: 20px; filter: drop-shadow(0 0 5px #00d2ff); }
+.upgrade-info { flex: 1; }
+.upgrade-info h4 { margin: 5px 0; font-size: 18px; }
+.upgrade-info p { margin: 0; font-size: 13px; color: #94a3b8; }
+.lvl-tag { background: #00d2ff; color: #000; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+
+/* 底部導覽列 */
+.nav-bar {
+    height: 85px;
+    background: #0f172a;
+    display: flex;
+    border-top: 2px solid #1e293b;
+    padding-bottom: env(safe-area-inset-bottom); /* 支援手機瀏海屏 */
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-item.active {
+    color: #00d2ff;
+    background: rgba(0, 210, 255, 0.08);
+}
+.nav-item span { font-size: 26px; font-weight: bold; }
+
+/* --- 按鈕樣式 --- */
+#start-btn {
+    width: 80%;
+    background: linear-gradient(180deg, #00d2ff, #0099ff);
+    color: #000;
+    border: none;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);
+    transition: 0.2s;
+}
+
+#start-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+#upgrade-cube-btn {
+    background: #ffd700;
+    color: #000;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#upgrade-cube-btn:disabled {
+    background: #475569;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* --- 升級與死亡彈窗 --- */
+#level-up {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(15, 23, 42, 0.95);
+    padding: 30px; border-radius: 20px;
+    border: 2px solid #00d2ff;
+    z-index: 200; width: 320px; text-align: center;
+}
+
+.upgrade-title { color: #00d2ff; margin-bottom: 20px; }
+.option-column { display: flex; flex-direction: column; gap: 10px; }
+.option-btn {
+    background: #1e293b; border: 1px solid #334155;
+    padding: 15px; color: white; border-radius: 10px;
+    cursor: pointer; transition: 0.2s; text-align: left;
+}
+.option-btn:hover { background: #00d2ff; color: #000; }
+
+#death-screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0); display: none;
+    justify-content: center; align-items: center; z-index: 300;
+    transition: background 1s;
+}
+#death-screen.visible { background: rgba(139, 0, 0, 0.6); }
+.death-banner {
+    font-size: 60px; font-weight: bold; color: #fff;
+    text-shadow: 0 0 20px #ff0000; transform: scale(0); transition: 0.5s;
+}
+#death-screen.visible .death-banner { transform: scale(1); }
+
+/* 新敵人公告橫幅 */
+#enemy-banner {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); display: none;
+    justify-content: center; align-items: center; z-index: 400;
+}
+.banner-content {
+    background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.8), transparent);
+    width: 100%; padding: 40px 0; text-align: center;
+    border-top: 2px solid #ff4d4d; border-bottom: 2px solid #ff4d4d;
+}
+.banner-title { font-size: 48px; font-weight: bold; color: white; }
+.banner-desc { font-size: 18px; color: #ccc; margin-top: 10px; }
+.upgrade-icon {
+    width: 45px;
+    height: 45px;
+    margin-right: 15px;
+    background: linear-gradient(135deg, #00d2ff 0%, #0072ff 100%); /* 藍色漸層 */
+    border: 2px solid #fff;
+    border-radius: 8px; /* 圓角 */
+    position: relative;
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.6); /* 藍色發光 */
+    flex-shrink: 0; /* 防止被擠壓 */
+}

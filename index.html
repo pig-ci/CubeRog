@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>-</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-ui" style="display: none;">
+        <div id="exp-bar-container"><div id="exp-fill"></div></div>
+        <div id="timer-container">00:00</div>
+        <div id="ui">
+            <div class="player-name">藍色方塊</div>
+            <div class="hp-bar-outer"><div id="hp-fill"></div></div>
+            <div>等級: <span id="lvl">1</span> | 擊殺: <span id="kills">0</span></div>
+        </div>
+    </div>
+
+    <div id="home-screen">
+        <div class="top-bar">
+            <div class="currency">💰 <span id="total-gold">0</span></div>
+        </div>
+
+        <div id="content-area">
+            <div id="tab-battle" class="tab-content">
+                <h1 class="game-title">戰役</h1>
+                <div class="stage-card">
+                    <div class="stage-info">
+                        <h3>第一章：方塊森林</h3>
+                        <p id="best-run-stats">尚未有紀錄</p>
+                    </div>
+                    <button id="start-btn">開始戰鬥</button>
+                </div>
+                <div id="last-run-stats" class="last-stats"></div>
+            </div>
+
+            <div id="tab-upgrade" class="tab-content" style="display: none;">
+                <h1 class="game-title">強化</h1>
+                <div class="upgrade-container">
+                    <div class="upgrade-card">
+                        <div class="upgrade-icon"></div>
+                        <div class="upgrade-info">
+                            <span class="lvl-tag">Lv.<span id="cube-lvl-display">1</span></span>
+                            <h4>核心屬性強化</h4>
+                            <p>攻擊 +<span id="atk-bonus">0</span> | 血量 +<span id="hp-bonus">0</span></p>
+                        </div>
+                        <button id="upgrade-cube-btn">升級<br><small>💰<span id="upgrade-cost-display">500</span></small></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="switchTab('battle')">
+                <span>戰役</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('upgrade')">
+                <span>強化</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="level-up" style="display: none;">
+        <h2 class="upgrade-title">升級選擇</h2>
+        <div id="options-container" class="option-column"></div>
+    </div>
+    <div id="death-screen"><div class="death-banner">你已死亡</div></div>
+    <div id="enemy-banner">
+        <div class="banner-content">
+            <div class="banner-subtitle">警告：偵測到新威脅</div>
+            <div id="enemy-name" class="banner-title"></div>
+            <div id="enemy-desc" class="banner-desc"></div>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <script src="script.js"></script>
+</body>
+</html>
