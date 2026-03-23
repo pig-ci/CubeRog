@@ -15,7 +15,7 @@
     --primary-dark: #0099ff;
     --primary-gradient-end: #0072ff;
     --primary-glow: rgba(0, 210, 255, 0.5);
-    --primary-glow-intense: rgba(0, 210, 255, 0.6);
+    --primary-glow-intense: rgba(0, 210, 255, 0.8);
     --primary-border: #00d2ff;
 
     --danger: #ff4d4d;
@@ -57,376 +57,187 @@ body {
 
 canvas { display: block; }
 
+/* --- CSS 藍色星形 --- */
+.star-container {
+    display: inline-flex;
+    gap: 3px;
+    vertical-align: middle;
+}
+
+.star {
+    width: 14px;
+    height: 14px;
+    background-color: #334155; /* 空星顏色 */
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transition: 0.3s;
+}
+
+.star.filled {
+    background-color: var(--primary);
+    filter: drop-shadow(0 0 2px var(--primary)); /* 給星星一點光暈 */
+}
+
 /* --- 遊戲內 UI (戰鬥中) --- */
 #game-ui {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 10;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 10;
 }
 
-#ui { 
-    position: absolute; 
-    top: 25px; 
-    left: 20px; 
-}
+#ui { position: absolute; top: 25px; left: 20px; }
 
 .player-name {
-    font-size: 18px; 
-    color: var(--primary); 
-    font-weight: bold;
+    font-size: 18px; color: var(--primary); font-weight: bold;
     text-shadow: 0 0 10px var(--primary-glow);
 }
 
 #timer-container { 
-    position: absolute; 
-    top: 35px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    font-size: 28px; 
-    font-weight: bold; 
-    color: var(--text-white); 
-    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    position: absolute; top: 35px; left: 50%; transform: translateX(-50%); 
+    font-size: 28px; font-weight: bold; color: var(--text-white); text-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
 
 #exp-bar-container {
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 10px; 
-    background: var(--bg-progress); 
+    position: absolute; top: 0; left: 0; width: 100%; height: 10px; background: var(--bg-progress); 
 }
 
 #exp-fill { 
-    height: 100%; 
-    width: 0%; 
-    background: var(--primary); 
-    transition: 0.1s; 
-    box-shadow: var(--shadow-primary);
+    height: 100%; width: 0%; background: var(--primary); transition: 0.1s; box-shadow: var(--shadow-primary);
 }
 
 .hp-bar-outer { 
-    background: var(--bg-hp-outer); 
-    width: 200px; 
-    height: 14px; 
-    border-radius: 7px; 
-    overflow: hidden; 
-    margin: 8px 0;
-    border: 1px solid var(--border-hp);
+    background: var(--bg-hp-outer); width: 200px; height: 14px; 
+    border-radius: 7px; overflow: hidden; margin: 8px 0; border: 1px solid var(--border-hp);
 }
 
 #hp-fill { 
-    background: linear-gradient(90deg, var(--danger), var(--danger-light)); 
-    width: 100%; 
-    height: 100%; 
-    transition: 0.2s;
+    background: linear-gradient(90deg, var(--danger), var(--danger-light)); width: 100%; height: 100%; transition: 0.2s;
 }
 
-/* --- 主首頁 (分欄式) --- */
+#boss-hp-container {
+    position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+    width: 50%; min-width: 300px; max-width: 800px; text-align: center; z-index: 15;
+}
+
+#boss-name {
+    color: #ff0055; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 0, 85, 0.8);
+    margin-bottom: 8px; letter-spacing: 2px;
+}
+
+.boss-hp-bar-outer {
+    background: rgba(0, 0, 0, 0.8); width: 100%; height: 24px; border-radius: 12px;
+    border: 2px solid #555; overflow: hidden; box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+#boss-hp-fill {
+    background: linear-gradient(90deg, #aa0000, #ff0055); width: 100%; height: 100%;
+    transition: width 0.1s linear; box-shadow: 0 0 15px #ff0055;
+}
+
+/* --- 主首頁 --- */
 #home-screen {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
+    z-index: 100; display: flex; flex-direction: column;
 }
 
 .top-bar {
-    padding: 15px 20px;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    justify-content: flex-end;
-    border-bottom: 1px solid var(--border-light);
+    padding: 15px 20px; background: rgba(0, 0, 0, 0.4); display: flex; justify-content: flex-end; border-bottom: 1px solid var(--border-light);
 }
 
 .currency {
-    color: var(--gold);
-    font-size: 20px;
-    font-weight: bold;
-    background: var(--gold-bg-light);
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--gold-border);
+    color: var(--gold); font-size: 20px; font-weight: bold; background: var(--gold-bg-light);
+    padding: 6px 16px; border-radius: 20px; border: 1px solid var(--gold-border);
 }
 
-#content-area {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+#content-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
 
-.tab-content {
-    width: 100%;
-    max-width: 500px;
-    animation: fadeIn 0.3s ease-out;
-}
+.tab-content { width: 100%; max-width: 500px; animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+.game-title { text-align: center; font-size: 48px; margin: 20px 0; letter-spacing: 4px; color: var(--text-white); text-shadow: 0 0 20px var(--primary-glow); }
 
-.game-title {
-    text-align: center;
-    font-size: 48px;
-    margin: 20px 0;
-    letter-spacing: 4px;
-    color: var(--text-white);
-    text-shadow: 0 0 20px var(--primary-glow);
-}
+.chapter-selector { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
+.chapter-selector h3 { margin: 0 !important; min-width: 180px; font-size: 24px; color: var(--primary); }
+.chapter-btn { background: none; border: none; color: var(--primary); font-size: 20px; cursor: pointer; padding: 5px; transition: 0.2s; }
+.chapter-btn:hover { color: var(--text-white); text-shadow: 0 0 10px var(--primary-glow-intense); transform: scale(1.2); }
+.chapter-btn:disabled { color: var(--border-card); cursor: not-allowed; text-shadow: none; transform: none; }
 
-/* 章節選擇器樣式 */
-.chapter-selector {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.chapter-selector h3 {
-    margin: 0 !important;
-    min-width: 180px;
-    font-size: 24px;
-    color: var(--primary);
-}
-
-.chapter-btn {
-    background: none;
-    border: none;
-    color: var(--primary);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 5px;
-    transition: 0.2s;
-}
-
-.chapter-btn:hover {
-    color: var(--text-white);
-    text-shadow: 0 0 10px var(--primary-glow-intense);
-    transform: scale(1.2);
-}
-
-.chapter-btn:disabled {
-    color: var(--border-card);
-    cursor: not-allowed;
-    text-shadow: none;
-    transform: none;
-}
-
-/* 戰役卡片 */
-.stage-card {
-    background: var(--bg-card);
-    border: 2px solid var(--border-card);
-    border-radius: 20px;
-    padding: 30px;
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
+.stage-card { background: var(--bg-card); border: 2px solid var(--border-card); border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
 .stage-info p { color: var(--text-muted); margin-bottom: 25px; }
 
-.last-stats {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 10px;
-    font-size: 14px;
-    color: var(--text-light);
-    line-height: 1.5;
-}
+.last-stats { margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; font-size: 14px; color: var(--text-light); line-height: 1.5; }
 
-/* 強化卡片 */
 .upgrade-container { width: 100%; }
-.upgrade-card {
-    background: var(--bg-card);
-    border: 2px solid var(--border-card);
-    border-radius: 15px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.upgrade-icon {
-    font-size: 40px;
-    margin-right: 15px;
-    filter: drop-shadow(0 0 5px var(--primary));
-    width: 45px;
-    height: 45px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-gradient-end) 100%);
-    border: 2px solid var(--text-white);
-    border-radius: 8px;
-    position: relative;
-    box-shadow: 0 0 15px var(--primary-glow-intense);
-    flex-shrink: 0;
-}
-
+.upgrade-card { background: var(--bg-card); border: 2px solid var(--border-card); border-radius: 15px; padding: 20px; display: flex; align-items: center; margin-bottom: 15px; }
+.upgrade-icon { font-size: 40px; margin-right: 15px; filter: drop-shadow(0 0 5px var(--primary)); width: 45px; height: 45px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-gradient-end) 100%); border: 2px solid var(--text-white); border-radius: 8px; position: relative; box-shadow: 0 0 15px var(--primary-glow-intense); flex-shrink: 0; }
 .upgrade-info { flex: 1; }
 .upgrade-info h4 { margin: 5px 0; font-size: 18px; }
 .upgrade-info p { margin: 0; font-size: 13px; color: var(--text-muted); }
 .lvl-tag { background: var(--primary); color: var(--text-dark); padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
 
-/* 底部導覽列 */
-.nav-bar {
-    height: 85px;
-    background: var(--bg-nav);
-    display: flex;
-    border-top: 2px solid var(--border-nav);
-    padding-bottom: env(safe-area-inset-bottom);
-}
-
-.nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: var(--text-nav-inactive);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.nav-item.active {
-    color: var(--primary);
-    background: rgba(0, 210, 255, 0.08);
-}
+.nav-bar { height: 85px; background: var(--bg-nav); display: flex; border-top: 2px solid var(--border-nav); padding-bottom: env(safe-area-inset-bottom); }
+.nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-nav-inactive); cursor: pointer; transition: all 0.2s; }
+.nav-item.active { color: var(--primary); background: rgba(0, 210, 255, 0.08); }
 .nav-item span { font-size: 26px; font-weight: bold; }
 
-/* --- 按鈕樣式 --- */
-#start-btn {
-    width: 80%;
-    background: linear-gradient(180deg, var(--primary), var(--primary-dark));
-    color: var(--text-dark);
-    border: none;
-    padding: 15px;
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 50px;
-    cursor: pointer;
-    box-shadow: 0 5px 15px var(--primary-glow-intense);
-    transition: 0.2s;
-}
-
+#start-btn { width: 80%; background: linear-gradient(180deg, var(--primary), var(--primary-dark)); color: var(--text-dark); border: none; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px var(--primary-glow-intense); transition: 0.2s; }
 #start-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+#upgrade-cube-btn { background: var(--gold); color: var(--text-dark); border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+#upgrade-cube-btn:disabled { background: #475569; color: var(--text-muted); cursor: not-allowed; }
 
-#upgrade-cube-btn {
-    background: var(--gold);
-    color: var(--text-dark);
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-#upgrade-cube-btn:disabled {
-    background: #475569;
-    color: var(--text-muted);
-    cursor: not-allowed;
-}
-
-/* --- 升級與暫停彈窗 --- */
+/* --- 升級彈窗 --- */
 #level-up {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--bg-upgrade-popup);
-    padding: 30px; border-radius: 20px;
-    border: 2px solid var(--primary-border);
-    z-index: 200; width: 320px; text-align: center;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: var(--bg-upgrade-popup); padding: 30px; border-radius: 20px;
+    border: 2px solid var(--primary-border); z-index: 200; width: 320px; text-align: center;
 }
-
-#pause-menu {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg-overlay);
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    z-index: 250;
-}
-
-.pause-title {
-    color: var(--primary); font-size: 40px; margin-bottom: 30px;
-    text-shadow: 0 0 15px var(--primary-glow);
-}
-
-.upgrade-title { color: var(--primary); margin-bottom: 20px; }
+.upgrade-title { color: var(--primary); margin-bottom: 20px; text-shadow: 0 0 10px var(--primary-glow); }
 .option-column { display: flex; flex-direction: column; gap: 10px; margin: 0 auto; }
 .option-btn {
-    background: var(--bg-card); border: 1px solid var(--border-card);
-    padding: 15px; color: var(--text-white); border-radius: 10px;
-    cursor: pointer; transition: 0.2s; text-align: left;
+    background: var(--bg-card); border: 1px solid var(--border-card); padding: 15px; color: var(--text-white);
+    border-radius: 10px; cursor: pointer; transition: 0.2s; text-align: left; position: relative;
 }
-.option-btn:hover { background: var(--primary); color: var(--text-dark); }
+.option-btn:hover { background: rgba(0, 210, 255, 0.15); border-color: var(--primary); }
+
+.upgrade-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.upgrade-header strong { font-size: 16px; color: var(--primary); }
+
+/* --- 暫停選單 (全螢幕遮罩與面板) --- */
+#pause-menu {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-overlay); backdrop-filter: blur(5px);
+    display: flex; justify-content: center; align-items: center; z-index: 250;
+}
+.pause-container {
+    background: var(--bg-dark); border: 2px solid var(--border-card); border-radius: 20px;
+    width: 90%; max-width: 400px; padding: 30px; display: flex; flex-direction: column; align-items: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+.pause-title { color: var(--primary); font-size: 32px; margin: 0 0 20px 0; text-shadow: 0 0 15px var(--primary-glow); }
+
+.pause-upgrades-section {
+    width: 100%; background: var(--bg-card); border-radius: 10px; padding: 15px; margin-bottom: 20px;
+    max-height: 250px; overflow-y: auto; border: 1px solid var(--border-light);
+}
+.pause-upgrades-section h3 { margin: 0 0 10px 0; font-size: 16px; color: var(--text-light); text-align: center; border-bottom: 1px solid var(--border-light); padding-bottom: 8px; }
+
+#acquired-upgrades-list { display: flex; flex-direction: column; gap: 8px; }
+.acquired-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 14px; }
+
+.pause-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.danger-btn { background: rgba(139,0,0,0.3) !important; border-color: var(--danger-border) !important; color: var(--danger-light) !important; }
+.danger-btn:hover { background: rgba(139,0,0,0.6) !important; border-color: var(--danger) !important; color: #fff !important; }
 
 /* --- 死亡畫面與橫幅 --- */
-#death-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 300;
-    transition: background 1s;
-}
+#death-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0); display: none; justify-content: center; align-items: center; z-index: 300; transition: background 1s; }
+#death-screen.visible { background: var(--danger-bg); }
+#death-screen.visible .death-banner, #death-screen.visible .win-banner { transform: scale(1); }
 
-#death-screen.visible {
-    background: var(--danger-bg);
-}
+.death-banner, .win-banner { font-size: 60px; font-weight: bold; text-align: center; padding: 40px 0; width: 100%; background: linear-gradient(90deg, transparent, var(--bg-overlay), transparent); display: flex; justify-content: center; align-items: center; transition: transform 0.5s; transform: scale(0); }
+.death-banner { color: var(--danger); text-shadow: var(--shadow-red); border-top: 2px solid var(--danger-border); border-bottom: 2px solid var(--danger-border); }
+.win-banner { color: var(--gold); text-shadow: var(--shadow-gold); border-top: 2px solid var(--gold-border); border-bottom: 2px solid var(--gold-border); }
 
-#death-screen.visible .death-banner,
-#death-screen.visible .win-banner {
-    transform: scale(1);
-}
-
-.death-banner, .win-banner {
-    font-size: 60px;
-    font-weight: bold;
-    text-align: center;
-    padding: 40px 0;
-    width: 100%;
-    background: linear-gradient(90deg, transparent, var(--bg-overlay), transparent);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.5s;
-    transform: scale(0);
-}
-
-.death-banner {
-    color: var(--danger);
-    text-shadow: var(--shadow-red);
-    border-top: 2px solid var(--danger-border);
-    border-bottom: 2px solid var(--danger-border);
-}
-
-.win-banner {
-    color: var(--gold);
-    text-shadow: var(--shadow-gold);
-    border-top: 2px solid var(--gold-border);
-    border-bottom: 2px solid var(--gold-border);
-}
-
-#enemy-banner {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg-overlay); display: none;
-    justify-content: center; align-items: center; z-index: 400;
-}
-.banner-content {
-    background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.8), transparent);
-    width: 100%; padding: 40px 0; text-align: center;
-    border-top: 2px solid var(--danger); border-bottom: 2px solid var(--danger);
-}
+#enemy-banner { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); display: none; justify-content: center; align-items: center; z-index: 400; }
+.banner-content { background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.8), transparent); width: 100%; padding: 40px 0; text-align: center; border-top: 2px solid var(--danger); border-bottom: 2px solid var(--danger); }
 .banner-title { font-size: 48px; font-weight: bold; color: var(--text-white); }
 .banner-subtitle { font-size: 20px; color: var(--danger-light); margin-bottom: 5px; font-weight: bold; }
 .banner-desc { font-size: 18px; color: #ccc; margin-top: 10px; }
