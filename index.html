@@ -12,7 +12,7 @@
         <div id="timer-container">00:00</div>
         
         <div id="boss-hp-container" style="display: none;">
-            <div id="boss-name"></div>
+            <div id="boss-name">狙擊手：終極方塊</div>
             <div class="boss-hp-bar-outer">
                 <div id="boss-hp-fill"></div>
             </div>
@@ -32,7 +32,17 @@
 
         <div id="content-area">
             <div id="tab-battle" class="tab-content">
-                <h1 class="game-title">戰役</h1>
+                <div class="title-container">
+                    <h1 class="game-title">戰役</h1>
+                    <label class="switch-wrapper">
+                        <span class="switch-label">試煉模式</span>
+                        <div class="switch">
+                            <input type="checkbox" id="trial-mode-toggle">
+                            <span class="slider round"></span>
+                        </div>
+                    </label>
+                </div>
+                
                 <div class="stage-card">
                     <div class="stage-info">
                         <div class="chapter-selector">
@@ -78,7 +88,6 @@
         <div id="options-container" class="option-column"></div>
     </div>
 
-    <!-- 暫停選單 (全螢幕遮罩) -->
     <div id="pause-menu" style="display: none;">
         <div class="pause-container">
             <h2 class="pause-title">遊戲暫停</h2>
@@ -112,6 +121,10 @@
     </div>
 
     <canvas id="gameCanvas"></canvas>
-    <script src="script.js"></script>
+    <script src="js/dom-elements.js" defer></script>
+    <script src="js/game-state.js" defer></script>
+    <script src="js/ui-handler.js" defer></script>
+    <script src="js/game-logic.js" defer></script>
+    <script src="js/main.js" defer></script>
 </body>
 </html>
