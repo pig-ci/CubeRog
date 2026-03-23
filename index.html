@@ -27,7 +27,11 @@
                 <h1 class="game-title">戰役</h1>
                 <div class="stage-card">
                     <div class="stage-info">
-                        <h3>第一章：方塊森林</h3>
+                        <div class="chapter-selector">
+                            <button id="prev-chapter-btn" class="chapter-btn" style="display: none;">◀</button>
+                            <h3 id="chapter-title">第一章：方塊森林</h3>
+                            <button id="next-chapter-btn" class="chapter-btn" style="display: none;">▶</button>
+                        </div>
                         <p id="best-run-stats">尚未有紀錄</p>
                     </div>
                     <button id="start-btn">開始戰鬥</button>
@@ -65,7 +69,21 @@
         <h2 class="upgrade-title">升級選擇</h2>
         <div id="options-container" class="option-column"></div>
     </div>
-    <div id="death-screen"><div class="death-banner">你已死亡</div></div>
+
+    <div id="pause-menu" style="display: none;">
+        <h2 class="pause-title">遊戲暫停</h2>
+        <div class="option-column" style="width: 250px;">
+            <button id="resume-btn" class="option-btn" style="text-align: center;">繼續遊戲</button>
+            <button id="restart-btn" class="option-btn" style="text-align: center;">重新開始</button>
+            <button id="end-battle-btn" class="option-btn" style="text-align: center; background: rgba(139,0,0,0.5); border-color: var(--danger);">結束戰鬥<br><small>(僅獲得 1/4 獎勵)</small></button>
+        </div>
+    </div>
+
+    <div id="death-screen">
+        <div id="death-banner" class="death-banner">你已死亡</div>
+        <div id="win-banner" class="win-banner" style="display: none;">戰役完勝</div>
+    </div>
+
     <div id="enemy-banner">
         <div class="banner-content">
             <div class="banner-subtitle">警告：偵測到新威脅</div>
