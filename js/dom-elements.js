@@ -1,0 +1,45 @@
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// --- DOM 元素獲取 ---
+const homeScreen = document.getElementById('home-screen');
+const gameUI = document.getElementById('game-ui');
+const hpFill = document.getElementById('hp-fill');
+const expFill = document.getElementById('exp-fill');
+const lvlEl = document.getElementById('lvl');
+const killsEl = document.getElementById('kills');
+const timerEl = document.getElementById('timer-container');
+const levelUpUI = document.getElementById('level-up');
+const optionsContainer = document.getElementById('options-container');
+const startBtn = document.getElementById('start-btn');
+const deathScreen = document.getElementById('death-screen');
+const deathBanner = document.querySelector('.death-banner'); 
+const winBanner = document.getElementById('win-banner');
+const totalGoldEl = document.getElementById('total-gold');
+const lastRunStats = document.getElementById('last-run-stats');
+const bestRunStats = document.getElementById('best-run-stats');
+
+const enemyBanner = document.getElementById('enemy-banner');
+const enemyNameEl = document.getElementById('enemy-name');
+const enemyDescEl = document.getElementById('enemy-desc');
+const upgradeCubeBtn = document.getElementById('upgrade-cube-btn');
+const cubeLvlDisplay = document.getElementById('cube-lvl-display');
+const upgradeCostDisplay = document.getElementById('upgrade-cost-display');
+
+const chapterTitleEl = document.getElementById('chapter-title');
+const prevChapBtn = document.getElementById('prev-chapter-btn');
+const nextChapBtn = document.getElementById('next-chapter-btn');
+
+const trialModeToggle = document.getElementById('trial-mode-toggle');
+const tabBattle = document.getElementById('tab-battle');
+
+const pauseMenu = document.getElementById('pause-menu');
+const resumeBtn = document.getElementById('resume-btn');
+const restartBtn = document.getElementById('restart-btn');
+const endBattleBtn = document.getElementById('end-battle-btn');
+const acquiredUpgradesList = document.getElementById('acquired-upgrades-list');
+
+// Boss 血條專用 DOM
+const bossHpContainer = document.getElementById('boss-hp-container');
+const bossHpFill = document.getElementById('boss-hp-fill');
+const bossNameEl = document.getElementById('boss-name');
