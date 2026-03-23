@@ -71,6 +71,21 @@
                     </div>
                 </div>
             </div>
+            
+            <div id="tab-trial" class="tab-content" style="display: none;">
+                <h1 class="game-title">試煉</h1>
+                <div class="trial-container">
+                    <button class="trial-card" id="show-sniper-trial-btn">
+                        <h4>狙擊手試煉</h4>
+                        <p>直接挑戰強大的狙擊手頭目，測試你的極限。</p>
+                    </button>
+                    <button class="trial-card" id="show-chase-trial-btn">
+                        <h4>追擊試煉</h4>
+                        <p>在大量衝鋒方塊的圍剿下生存下來。</p>
+                    </button>
+                </div>
+            </div>
+
         </div>
 
         <div class="nav-bar">
@@ -79,6 +94,31 @@
             </div>
             <div class="nav-item" onclick="switchTab('upgrade')">
                 <span>強化</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('trial')">
+                <span>試煉</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="sniper-trial-screen" class="popup-screen" style="display: none;">
+        <div class="popup-container">
+            <h2 class="popup-title">狙擊手挑戰</h2>
+            <p class="popup-desc">你將獲得 5 次初始升級機會，然後直接與「狙擊手」進行一對一的對決。祝你好運。</p>
+            <div class="popup-actions">
+                <button id="start-sniper-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
+                <button id="close-sniper-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chase-trial-screen" class="popup-screen" style="display: none;">
+        <div class="popup-container">
+            <h2 class="popup-title">追擊挑戰</h2>
+            <p class="popup-desc">你將獲得 3 次初始升級機會，然後面對 140 隻強化衝鋒方塊的猛攻。盡力存活！</p>
+            <div class="popup-actions">
+                <button id="start-chase-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
+                <button id="close-chase-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
             </div>
         </div>
     </div>
@@ -121,6 +161,8 @@
     </div>
 
     <canvas id="gameCanvas"></canvas>
+    
+    <!-- 分割後的 JS 檔案 -->
     <script src="js/dom-elements.js" defer></script>
     <script src="js/game-state.js" defer></script>
     <script src="js/ui-handler.js" defer></script>
