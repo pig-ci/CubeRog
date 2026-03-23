@@ -10,6 +10,14 @@
     <div id="game-ui" style="display: none;">
         <div id="exp-bar-container"><div id="exp-fill"></div></div>
         <div id="timer-container">00:00</div>
+        
+        <div id="boss-hp-container" style="display: none;">
+            <div id="boss-name"></div>
+            <div class="boss-hp-bar-outer">
+                <div id="boss-hp-fill"></div>
+            </div>
+        </div>
+
         <div id="ui">
             <div class="player-name">藍色方塊</div>
             <div class="hp-bar-outer"><div id="hp-fill"></div></div>
@@ -70,12 +78,23 @@
         <div id="options-container" class="option-column"></div>
     </div>
 
+    <!-- 暫停選單 (全螢幕遮罩) -->
     <div id="pause-menu" style="display: none;">
-        <h2 class="pause-title">遊戲暫停</h2>
-        <div class="option-column" style="width: 250px;">
-            <button id="resume-btn" class="option-btn" style="text-align: center;">繼續遊戲</button>
-            <button id="restart-btn" class="option-btn" style="text-align: center;">重新開始</button>
-            <button id="end-battle-btn" class="option-btn" style="text-align: center; background: rgba(139,0,0,0.5); border-color: var(--danger);">結束戰鬥<br><small>(僅獲得 1/4 獎勵)</small></button>
+        <div class="pause-container">
+            <h2 class="pause-title">遊戲暫停</h2>
+            
+            <div class="pause-upgrades-section">
+                <h3>已獲得升級</h3>
+                <div id="acquired-upgrades-list">
+                    <!-- 動態注入已獲得的升級清單 -->
+                </div>
+            </div>
+
+            <div class="pause-actions">
+                <button id="resume-btn" class="option-btn" style="text-align: center;">繼續遊戲</button>
+                <button id="restart-btn" class="option-btn" style="text-align: center;">重新開始</button>
+                <button id="end-battle-btn" class="option-btn danger-btn">結束戰鬥<br><small>(僅獲得 1/4 獎勵)</small></button>
+            </div>
         </div>
     </div>
 
