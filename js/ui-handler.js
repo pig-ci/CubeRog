@@ -87,7 +87,7 @@ resumeBtn.onclick = togglePause;
 restartBtn.onclick = () => { 
     pauseMenu.style.display = 'none'; 
     isPaused = false; 
-    initGame(); 
+    initGame(gameMode); // 重新開始時保持模式
 };
 
 endBattleBtn.onclick = () => { 
@@ -165,12 +165,54 @@ enemyBanner.onclick = () => {
     lastTime = 0; 
 };
 
+// --- 試煉 UI 邏輯 ---
+showSniperTrialBtn.onclick = () => {
+    sniperTrialScreen.style.display = 'flex';
+};
+closeSniperTrialBtn.onclick = () => {
+    sniperTrialScreen.style.display = 'none';
+};
+startSniperTrialBtn.onclick = () => {
+    sniperTrialScreen.style.display = 'none';
+    initGame('sniper_trial'); 
+};
+
+showChaseTrialBtn.onclick = () => {
+    chaseTrialScreen.style.display = 'flex';
+};
+closeChaseTrialBtn.onclick = () => {
+    chaseTrialScreen.style.display = 'none';
+};
+startChaseTrialBtn.onclick = () => {
+    chaseTrialScreen.style.display = 'none';
+    initGame('chase_trial');
+};
+
 function showEnemyBanner(typeKey) {
     const data = enemyTypes[typeKey]; 
     gameActive = false;
     enemyNameEl.innerText = data.name; 
     enemyDescEl.innerText = data.desc;
     enemyBanner.style.display = 'flex';
+}
+
+function completeLevelUp() {
+    levelUpsPending--;
+    levelUpUI.style.display = 'none';
+
+    if (levelUpsPending > 0) {
+        showLevelUp(); // 如果還有待處理的升級，繼續顯示升級畫面
+    } else {
+        if (gameMode === 'sniper_trial') {
+            createEnemy('sniperBoss'); // 升級完畢，生成Boss
+        } else if (gameMode === 'chase_trial') {
+            for(let i=0; i<140; i++) {
+                createEnemy('charger'); // 升級完畢，生成大量衝鋒怪
+            }
+        }
+        gameActive = true;
+        lastTime = 0;
+    }
 }
 
 function showLevelUp() {
@@ -196,9 +238,7 @@ function showLevelUp() {
         btn.onclick = () => {
             upg.action();
             upg.stars++;
-            levelUpUI.style.display = 'none';
-            gameActive = true;
-            lastTime = 0;
+            completeLevelUp(); // 點擊後呼叫新的完成函式
         };
         
         optionsContainer.appendChild(btn);
