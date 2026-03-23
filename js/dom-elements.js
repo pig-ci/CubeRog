@@ -1,7 +1,5 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-
-// --- DOM 元素獲取 ---
 const homeScreen = document.getElementById('home-screen');
 const gameUI = document.getElementById('game-ui');
 const hpFill = document.getElementById('hp-fill');
@@ -18,28 +16,30 @@ const winBanner = document.getElementById('win-banner');
 const totalGoldEl = document.getElementById('total-gold');
 const lastRunStats = document.getElementById('last-run-stats');
 const bestRunStats = document.getElementById('best-run-stats');
-
 const enemyBanner = document.getElementById('enemy-banner');
 const enemyNameEl = document.getElementById('enemy-name');
 const enemyDescEl = document.getElementById('enemy-desc');
 const upgradeCubeBtn = document.getElementById('upgrade-cube-btn');
 const cubeLvlDisplay = document.getElementById('cube-lvl-display');
 const upgradeCostDisplay = document.getElementById('upgrade-cost-display');
-
 const chapterTitleEl = document.getElementById('chapter-title');
 const prevChapBtn = document.getElementById('prev-chapter-btn');
 const nextChapBtn = document.getElementById('next-chapter-btn');
-
 const trialModeToggle = document.getElementById('trial-mode-toggle');
 const tabBattle = document.getElementById('tab-battle');
-
 const pauseMenu = document.getElementById('pause-menu');
 const resumeBtn = document.getElementById('resume-btn');
 const restartBtn = document.getElementById('restart-btn');
 const endBattleBtn = document.getElementById('end-battle-btn');
 const acquiredUpgradesList = document.getElementById('acquired-upgrades-list');
-
-// Boss 血條專用 DOM
 const bossHpContainer = document.getElementById('boss-hp-container');
 const bossHpFill = document.getElementById('boss-hp-fill');
 const bossNameEl = document.getElementById('boss-name');
+const sniperTrialScreen = document.getElementById('sniper-trial-screen');
+const showSniperTrialBtn = document.getElementById('show-sniper-trial-btn');
+const startSniperTrialBtn = document.getElementById('start-sniper-trial-btn');
+const closeSniperTrialBtn = document.getElementById('close-sniper-trial-btn');
+const chaseTrialScreen = document.getElementById('chase-trial-screen');
+const showChaseTrialBtn = document.getElementById('show-chase-trial-btn');
+const startChaseTrialBtn = document.getElementById('start-chase-trial-btn');
+const closeChaseTrialBtn = document.getElementById('close-chase-trial-btn');
