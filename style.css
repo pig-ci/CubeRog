@@ -29,6 +29,11 @@
     --gold-border: rgba(255, 215, 0, 0.3);
     --gold-glow: #ffd700;
 
+    /* 裝備稀有度顏色 */
+    --rarity-common: #94a3b8; /* 灰色 */
+    --rarity-uncommon: #22c55e; /* 綠色 */
+    --rarity-rare: #00d2ff; /* 藍色 */
+
     --text-white: #fff;
     --text-light: #cbd5e1;
     --text-muted: #94a3b8;
@@ -168,32 +173,13 @@ input:checked + .slider { background-color: var(--danger); }
 input:checked + .slider:before { transform: translateX(22px); }
 
 /* --- 試煉模式 (紅色系) --- */
-#tab-battle.trial-active .game-title {
-    color: var(--danger);
-    text-shadow: 0 0 20px var(--danger);
-}
-#tab-battle.trial-active .switch-label {
-    color: var(--danger-light);
-}
-#tab-battle.trial-active .stage-card {
-    border-color: var(--danger);
-    box-shadow: 0 10px 25px rgba(139, 0, 0, 0.4);
-}
-#tab-battle.trial-active .chapter-selector h3 {
-    color: var(--danger);
-}
-#tab-battle.trial-active .chapter-btn {
-    color: var(--danger);
-}
-#tab-battle.trial-active .chapter-btn:hover {
-    color: #fff;
-    text-shadow: 0 0 10px var(--danger);
-}
-#tab-battle.trial-active #start-btn {
-    background: linear-gradient(180deg, var(--danger), var(--danger-dark));
-    box-shadow: 0 5px 15px rgba(255, 0, 0, 0.6);
-    color: #fff;
-}
+#tab-battle.trial-active .game-title { color: var(--danger); text-shadow: 0 0 20px var(--danger); }
+#tab-battle.trial-active .switch-label { color: var(--danger-light); }
+#tab-battle.trial-active .stage-card { border-color: var(--danger); box-shadow: 0 10px 25px rgba(139, 0, 0, 0.4); }
+#tab-battle.trial-active .chapter-selector h3 { color: var(--danger); }
+#tab-battle.trial-active .chapter-btn { color: var(--danger); }
+#tab-battle.trial-active .chapter-btn:hover { color: #fff; text-shadow: 0 0 10px var(--danger); }
+#tab-battle.trial-active #start-btn { background: linear-gradient(180deg, var(--danger), var(--danger-dark)); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.6); color: #fff; }
 
 /* --- 戰役卡片與通用按鈕 --- */
 .chapter-selector { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; }
@@ -232,55 +218,51 @@ input:checked + .slider:before { transform: translateX(22px); }
     border-radius: 15px; padding: 20px; text-align: left; cursor: pointer; transition: 0.3s;
     width: 100%;
 }
-.trial-card:hover {
-    border-color: var(--danger);
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(139, 0, 0, 0.4);
-}
-.trial-card h4 { color: var(--danger-light); margin: 0 0 8px 0; font-size: 18px; }
+.trial-card:hover { border-color: var(--danger); transform: translateY(-5px); box-shadow: 0 8px 20px rgba(139, 0, 0, 0.4); }
+.trial-card h4 { color: var(--danger-light); margin: 0 0 8px 0; font-size: 18px; display: flex; align-items: center; justify-content: space-between; }
 .trial-card p { color: var(--text-muted); margin: 0; font-size: 14px; }
+.trial-lvl-badge { background: var(--danger); color: white; padding: 2px 8px; border-radius: 6px; font-size: 14px; font-weight: bold; box-shadow: 0 0 10px var(--danger); }
+.trial-reward-text { color: var(--gold) !important; font-weight: bold; margin-top: 10px !important; display: block; }
 
+/* --- 裝備頁面 --- */
+.equip-stats { background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 10px; padding: 15px; margin-bottom: 20px; width: 100%; font-size: 14px; color: var(--text-light); }
+.equip-stats p { margin: 5px 0; }
+.equip-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; margin-bottom: 20px; }
+.equip-slot { background: rgba(0,0,0,0.3); border: 2px dashed var(--border-card); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; min-height: 70px; display: flex; flex-direction: column; justify-content: center; transition: 0.2s; }
+.equip-slot:hover { background: rgba(255,255,255,0.05); }
+.equip-slot.filled { border-style: solid; }
+.inventory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+.inv-item { background: var(--bg-card); border: 2px solid var(--border-card); border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; font-size: 13px; transition: 0.2s; }
+.inv-item:hover { filter: brightness(1.2); transform: scale(1.05); }
 
-/* --- 升級彈窗 --- */
-#level-up {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: var(--bg-upgrade-popup); padding: 30px; border-radius: 20px;
-    border: 2px solid var(--primary-border); z-index: 200; width: 320px; text-align: center;
-}
+/* 裝備品質樣式 */
+.rarity-common { border-color: var(--rarity-common) !important; color: var(--rarity-common); }
+.rarity-uncommon { border-color: var(--rarity-uncommon) !important; color: var(--rarity-uncommon); text-shadow: 0 0 5px rgba(34, 197, 94, 0.3); }
+.rarity-rare { border-color: var(--rarity-rare) !important; color: var(--rarity-rare); text-shadow: 0 0 8px rgba(0, 210, 255, 0.5); box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
+
+/* --- 升級與裝備彈窗 --- */
+#level-up { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-upgrade-popup); padding: 30px; border-radius: 20px; border: 2px solid var(--primary-border); z-index: 200; width: 320px; text-align: center; }
 .upgrade-title { color: var(--primary); margin-bottom: 20px; text-shadow: 0 0 10px var(--primary-glow); }
 .option-column { display: flex; flex-direction: column; gap: 10px; margin: 0 auto; }
-.option-btn {
-    background: var(--bg-card); border: 1px solid var(--border-card); padding: 15px; color: var(--text-white);
-    border-radius: 10px; cursor: pointer; transition: 0.2s; text-align: left; position: relative;
-}
+.option-btn { background: var(--bg-card); border: 1px solid var(--border-card); padding: 15px; color: var(--text-white); border-radius: 10px; cursor: pointer; transition: 0.2s; text-align: left; position: relative; }
 .option-btn:hover { background: rgba(0, 210, 255, 0.15); border-color: var(--primary); }
-
 .upgrade-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 .upgrade-header strong { font-size: 16px; color: var(--primary); }
 
 /* --- 暫停選單 (全螢幕遮罩與面板) --- */
-.popup-screen, #pause-menu {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg-overlay); backdrop-filter: blur(5px);
-    display: flex; justify-content: center; align-items: center; z-index: 250;
-}
-.popup-container, .pause-container {
-    background: var(--bg-dark); border: 2px solid var(--border-card); border-radius: 20px;
-    width: 90%; max-width: 400px; padding: 30px; display: flex; flex-direction: column; align-items: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    text-align: center;
-}
+.popup-screen, #pause-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 250; }
+.popup-container, .pause-container { background: var(--bg-dark); border: 2px solid var(--border-card); border-radius: 20px; width: 90%; max-width: 400px; padding: 30px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; }
 .popup-title, .pause-title { color: var(--primary); font-size: 32px; margin: 0 0 20px 0; text-shadow: 0 0 15px var(--primary-glow); }
-.popup-title { color: var(--danger-light); text-shadow: 0 0 15px var(--danger); }
+
+/* 裝備視窗標題的品質顏色 */
+.popup-title.rarity-common { color: var(--rarity-common); text-shadow: none; }
+.popup-title.rarity-uncommon { color: var(--rarity-uncommon); text-shadow: 0 0 10px var(--rarity-uncommon); }
+.popup-title.rarity-rare { color: var(--rarity-rare); text-shadow: 0 0 15px var(--rarity-rare); }
+
 .popup-desc { color: var(--text-light); margin: 0 0 25px 0; line-height: 1.6; }
 .popup-actions, .pause-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-
-.pause-upgrades-section {
-    width: 100%; background: var(--bg-card); border-radius: 10px; padding: 15px; margin-bottom: 20px;
-    max-height: 250px; overflow-y: auto; border: 1px solid var(--border-light);
-}
+.pause-upgrades-section { width: 100%; background: var(--bg-card); border-radius: 10px; padding: 15px; margin-bottom: 20px; max-height: 250px; overflow-y: auto; border: 1px solid var(--border-light); }
 .pause-upgrades-section h3 { margin: 0 0 10px 0; font-size: 16px; color: var(--text-light); text-align: center; border-bottom: 1px solid var(--border-light); padding-bottom: 8px; }
-
 #acquired-upgrades-list { display: flex; flex-direction: column; gap: 8px; }
 .acquired-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; font-size: 14px; }
 
