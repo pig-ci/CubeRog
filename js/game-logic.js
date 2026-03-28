@@ -1,6 +1,87 @@
+function generateRandomEquipment(forcedRarity = null, forcedSlot = null) {
+    const slots = ['weapon', 'helmet', 'armor', 'boots', 'ring', 'amulet'];
+    const slot = forcedSlot ? forcedSlot : slots[Math.floor(Math.random() * slots.length)];
+    
+    // 稀有度分配：10% 稀有(藍), 30% 精良(綠), 60% 普通(灰)
+    let rarity = 'common';
+    if (forcedRarity) {
+        rarity = forcedRarity;
+    } else {
+        const r = Math.random();
+        if (r < 0.10) rarity = 'rare';        
+        else if (r < 0.40) rarity = 'uncommon'; 
+    }
+
+    let name = '';
+    let stats = { atk: 0, hp: 0, speed: 0 };
+    
+    // 決定要掉落哪一套裝備 (各 33.33% 機率)
+    const setRoll = Math.random();
+    let setType = '';
+    if (setRoll < 0.333) setType = 'light';
+    else if (setRoll < 0.666) setType = 'tactical';
+    else setType = 'basic';
+
+    // 稀有度倍率
+    const mult = rarity === 'rare' ? 2.5 : (rarity === 'uncommon' ? 1.5 : 1.0);
+    
+    // 屬性波動：給予基準數值 ±25% 的隨機浮動幅度 (0.75 ~ 1.25)
+    const fluctuation = 0.75 + (Math.random() * 0.50);
+    const finalMult = mult * fluctuation;
+
+    if (slot === 'weapon') { 
+        if (setType === 'light') name = '光束槍';
+        else if (setType === 'tactical') name = '戰術太刀';
+        else name = '鐵製手槍';
+        stats.atk = Math.max(1, Math.floor(15 * finalMult)); 
+    }
+    if (slot === 'helmet') { 
+        if (setType === 'light') name = '冷光頭盔';
+        else if (setType === 'tactical') name = '戰術頭盔';
+        else name = '鐵製頭盔'; 
+        stats.hp = Math.max(1, Math.floor(30 * finalMult)); 
+    }
+    if (slot === 'armor') { 
+        if (setType === 'light') name = '光戰甲';
+        else if (setType === 'tactical') name = '精鋼戰甲';
+        else name = '強化裝甲';
+        stats.hp = Math.max(1, Math.floor(50 * finalMult)); 
+    }
+    if (slot === 'boots') { 
+        if (setType === 'light') name = '流光鞋';
+        else if (setType === 'tactical') name = '戰術皮靴';
+        else name = '推進靴';
+        stats.speed = Math.max(0.1, parseFloat((0.3 * finalMult).toFixed(2))); 
+    }
+    if (slot === 'ring') { 
+        if (setType === 'light') name = '光圈';
+        else if (setType === 'tactical') name = '青銅戒指';
+        else name = '能量戒指';
+        stats.atk = Math.max(1, Math.floor(8 * finalMult)); 
+        stats.hp = Math.max(1, Math.floor(15 * finalMult)); 
+    }
+    if (slot === 'amulet') { 
+        if (setType === 'light') name = '流光護符';
+        else if (setType === 'tactical') name = '精鐵護符';
+        else name = '核心護符';
+        stats.atk = Math.max(1, Math.floor(12 * finalMult)); 
+    }
+
+    const rarityPrefix = rarity === 'rare' ? '稀有 ' : (rarity === 'uncommon' ? '精良 ' : '普通 ');
+    
+    return {
+        id: Date.now().toString() + Math.floor(Math.random() * 1000),
+        slot: slot,
+        rarity: rarity,
+        name: rarityPrefix + name,
+        baseName: name, 
+        stats: stats
+    };
+}
+
 startBtn.onclick = () => initGame('normal');
 function initGame(mode = 'normal') {
-    gameMode = mode; // 設定全域狀態
+    gameMode = mode; 
     score = 0; 
     level = 1; 
     exp = 0; 
@@ -12,6 +93,7 @@ function initGame(mode = 'normal') {
     enemyIdCounter = 0; 
     lastTime = 0; 
     runBonusGold = 0;
+    runDrops = [];
     projectiles = []; 
     enemies = []; 
     enemyProjectiles = []; 
@@ -25,17 +107,31 @@ function initGame(mode = 'normal') {
     deathScreen.classList.remove('visible');
     deathBanner.style.textShadow = ''; 
     deathBanner.style.color = '';
+    
+    // 計算裝備加成
+    let equipAtk = 0;
+    let equipHp = 0;
+    let equipSpeed = 0;
+    for (let key in playerEquipment) {
+        if (playerEquipment[key]) {
+            if (playerEquipment[key].stats.atk) equipAtk += playerEquipment[key].stats.atk;
+            if (playerEquipment[key].stats.hp) equipHp += playerEquipment[key].stats.hp;
+            if (playerEquipment[key].stats.speed) equipSpeed += playerEquipment[key].stats.speed;
+        }
+    }
+
     const bonusAtk = (cubeLevel - 1) * 20;
     const bonusHp = (cubeLevel - 1) * 10;
     const speedMult = Math.pow(1.01, cubeLevel - 1);
+    
     player = {
         x: canvas.width / 2, 
         y: canvas.height / 2, 
         size: 28,
-        hp: 100 + bonusHp, 
-        maxHp: 100 + bonusHp, 
-        speed: 4.8 * speedMult, 
-        damage: 40 + bonusAtk,
+        hp: 100 + bonusHp + equipHp, 
+        maxHp: 100 + bonusHp + equipHp, 
+        speed: (4.8 * speedMult) + equipSpeed, 
+        damage: 40 + bonusAtk + equipAtk,
         fireRate: 450, 
         lastShot: 0, 
         bulletCount: 1, 
@@ -45,6 +141,7 @@ function initGame(mode = 'normal') {
         spread: 0, 
         chainBounce: 0
     };
+    
     homeScreen.style.display = 'none'; 
     gameUI.style.display = 'block';
     deathScreen.style.display = 'none'; 
@@ -52,7 +149,8 @@ function initGame(mode = 'normal') {
     pauseMenu.style.display = 'none'; 
     bossHpContainer.style.display = 'none';
     gameStarted = true; 
-    if (gameMode === 'sniper_trial') {
+    
+    if (gameMode === 'sniper_trial' || gameMode === 'octopus_trial') {
         levelUpsPending = 5;
         level = 5;
         expToNext += (5 * 4);
@@ -67,6 +165,7 @@ function initGame(mode = 'normal') {
     }
     updateStatsUI();
 }
+
 function handleEndGame(isWin = false, isSurrender = false) {
     gameStarted = false; 
     gameActive = false; 
@@ -79,10 +178,38 @@ function handleEndGame(isWin = false, isSurrender = false) {
     let earnedGold = (elapsedMins * baseGoldPerMin) + runBonusGold; 
     
     if (isWin) {
-        let winBonus = 500;
-        if(gameMode === 'sniper_trial') winBonus = 1500;
-        else if(gameMode === 'chase_trial') winBonus = 1200;
-        earnedGold += winBonus * trialGoldMult;
+        if(gameMode === 'sniper_trial') {
+            earnedGold += 2000;
+            if (sniperTrialLevel % 5 === 0) {
+                runDrops.push(generateRandomEquipment('uncommon'));
+            } else {
+                runDrops.push(generateRandomEquipment('common'));
+            }
+            sniperTrialLevel++;
+            localStorage.setItem('cubeRPG_sniperTrialLevel', sniperTrialLevel);
+
+        } else if (gameMode === 'octopus_trial') {
+            earnedGold += 3000;
+            if (Math.random() < 0.3) {
+                runDrops.push(generateRandomEquipment('uncommon'));
+            } else {
+                runDrops.push(generateRandomEquipment('common'));
+            }
+            octopusTrialLevel++;
+            localStorage.setItem('cubeRPG_octopusTrialLevel', octopusTrialLevel);
+
+        } else if(gameMode === 'chase_trial') {
+            earnedGold += 1500;
+            chaseTrialLevel++;
+            localStorage.setItem('cubeRPG_chaseTrialLevel', chaseTrialLevel);
+        } else {
+            earnedGold += 500 * trialGoldMult;
+        }
+
+        if (runDrops.length > 0) {
+            playerInventory.push(...runDrops);
+            localStorage.setItem('cubeRPG_inventory', JSON.stringify(playerInventory));
+        }
     }
     
     if (isSurrender) {
@@ -145,17 +272,25 @@ function handleEndGame(isWin = false, isSurrender = false) {
                 runStatusText = "【戰鬥撤退】";
             } else if (gameMode === 'sniper_trial') {
                 runStatusText = isWin ? "【狙擊手試煉成功】" : "【狙擊手試煉失敗】";
+            } else if (gameMode === 'octopus_trial') {
+                runStatusText = isWin ? "【八爪魚試煉成功】" : "【八爪魚試煉失敗】";
             } else if (gameMode === 'chase_trial') {
                 runStatusText = isWin ? "【追擊試煉成功】" : "【追擊試煉失敗】";
             } else {
                 runStatusText = isWin ? "【戰役完勝】" : "上次戰鬥結算";
             }
 
-            lastRunStats.innerHTML = `${runStatusText}：擊殺 ${score} | 等級 ${level} | 時間 ${timeStr}<br>獲得獎勵：💰 ${earnedGold}`;
+            let dropText = isWin && runDrops.length > 0 
+                ? `<br>獲得裝備：${runDrops.map(d => `<span class="rarity-${d.rarity}">${d.name}</span>`).join(', ')}` 
+                : '';
+
+            lastRunStats.innerHTML = `${runStatusText}：擊殺 ${score} | 等級 ${level} | 時間 ${timeStr}<br>獲得獎勵：💰 ${earnedGold}${dropText}`;
             
             updateChapterUI(); 
             updateUpgradeUI(); 
             updateBestStats();
+            updateTrialUI(); 
+            updateEquipmentUI(); 
         }, 1000);
     }, 3000);
 }
@@ -186,7 +321,7 @@ function createEnemy(typeKey) {
     }
     
     let scaling = 0;
-    if (typeKey === 'tank' || typeKey === 'sniperBoss') {
+    if (typeKey === 'tank' || typeKey === 'sniperBoss' || typeKey === 'octopusBoss') {
         scaling = level * 50;
     } else {
         scaling = level * 20;
@@ -194,14 +329,18 @@ function createEnemy(typeKey) {
     
     const chapMult = (gameMode === 'normal') ? chapterData[selectedChapter - 1].multiplier : 1;
     const trialMult = (gameMode === 'normal' && isTrialMode) ? 5 : 1;
-    const chaseTrialMult = (gameMode === 'chase_trial' && typeKey === 'charger') ? 2 : 1;
-    const finalMult = chapMult * trialMult * chaseTrialMult;
+    let trialLevelMult = 1;
+    if (gameMode === 'sniper_trial') trialLevelMult = 1 + (sniperTrialLevel * 0.2);
+    if (gameMode === 'octopus_trial') trialLevelMult = 1 + (octopusTrialLevel * 0.2);
+    if (gameMode === 'chase_trial') trialLevelMult = 1 + (chaseTrialLevel * 0.2);
+    
+    const finalMult = chapMult * trialMult * trialLevelMult;
 
     const elapsedSecs = Math.floor(totalFrames / 60);
     const elapsedMins = Math.floor(elapsedSecs / 60);
     const timeMult = (gameMode === 'normal') ? 1 + (0.5 * elapsedMins) : 1;
 
-    enemies.push({ 
+    let newEnemy = { 
         ...data, 
         id: enemyIdCounter++, 
         type: typeKey, 
@@ -210,9 +349,21 @@ function createEnemy(typeKey) {
         currentHp: (data.hp + scaling) * finalMult * timeMult,
         maxHp: (data.hp + scaling) * finalMult * timeMult,
         damage: data.damage * finalMult * timeMult, 
-        exp: (gameMode === 'chase_trial') ? 0 : data.exp, // *** 修正點 ***
+        exp: (gameMode === 'chase_trial') ? 0 : data.exp,
         lastAttack: 0 
-    });
+    };
+
+    if (typeKey === 'octopusBoss') {
+        newEnemy.phase = 1;
+        newEnemy.isCharging = false;
+        newEnemy.chargeTimer = 0;
+        newEnemy.shockwaveActive = false;
+        newEnemy.shockwaveRadius = 0;
+        newEnemy.shockwaveHitPlayer = false;
+        newEnemy.baseColor = data.color;
+    }
+
+    enemies.push(newEnemy);
 }
 
 function handleSpawning() {
@@ -225,11 +376,15 @@ function handleSpawning() {
     if (currentChapInfo.hasBoss && elapsedSecs >= 300 && !bossSpawned) { 
         bossSpawned = true; 
         enemies = []; 
-        createEnemy('sniperBoss'); 
+        if (selectedChapter === 1) {
+            createEnemy('sniperBoss'); 
+        } else if (selectedChapter === 2) {
+            createEnemy('octopusBoss'); 
+        }
         return; 
     }
     
-    if (enemies.some(en => en.type === 'sniperBoss')) {
+    if (enemies.some(en => en.type === 'sniperBoss' || en.type === 'octopusBoss')) {
         return;
     }
 
@@ -259,19 +414,25 @@ function handleSpawning() {
         }
     }
 }
+
 function update(dt) {
     if (!gameActive || !gameStarted || isPaused) {
         return;
     }
+    
+    const now = Date.now(); // 統一移動至函式最上方，供所有邏輯共用
+    
     totalFrames++;
     const elapsedSecs = Math.floor(totalFrames / 60);
     timerEl.innerText = `${Math.floor(elapsedSecs/60).toString().padStart(2,'0')}:${(elapsedSecs%60).toString().padStart(2,'0')}`;
     handleSpawning(); 
     updateStatsUI();
+    
     if (gameMode === 'chase_trial' && enemies.length === 0 && gameStarted && score > 0) {
-        handleEndGame(true, false); // 追擊試煉，殺光所有敵人即勝利
+        handleEndGame(true, false); 
         return;
     }
+    
     const moveStep = player.speed * (dt * 60);
     if ((keys['w'] || keys['ArrowUp']) && player.y > player.size / 2) {
         player.y -= moveStep;
@@ -285,7 +446,7 @@ function update(dt) {
     if ((keys['d'] || keys['ArrowRight']) && player.x < canvas.width - player.size / 2) {
         player.x += moveStep;
     }
-    const now = Date.now();
+    
     if (now - player.lastShot > player.fireRate && enemies.length > 0) {
         let closest = null;
         let minDist = Infinity;
@@ -317,37 +478,71 @@ function update(dt) {
             player.lastShot = now;
         }
     }
+    
     for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
         let ep = enemyProjectiles[i];
+        
         if (ep.type === 'homing') {
             const dx = player.x - ep.x;
             const dy = player.y - ep.y;
             const d = Math.hypot(dx, dy);
-            ep.vx += (dx / d) * 0.15; 
-            ep.vy += (dy / d) * 0.15;
-            const currV = Math.hypot(ep.vx, ep.vy);
-            if(currV > 6) { 
-                ep.vx = (ep.vx / currV) * 6; 
-                ep.vy = (ep.vy / currV) * 6; 
+            if (ep.vx !== undefined && ep.vy !== undefined) {
+                ep.vx += (dx / d) * 0.2 * (dt * 60); 
+                ep.vy += (dy / d) * 0.2 * (dt * 60);
+                const currV = Math.hypot(ep.vx, ep.vy);
+                if(currV > 6) { 
+                    ep.vx = (ep.vx / currV) * 6; 
+                    ep.vy = (ep.vy / currV) * 6; 
+                }
+                ep.x += ep.vx * (dt * 60); 
+                ep.y += ep.vy * (dt * 60);
+            } else {
+                ep.x += (dx / d) * 5 * (dt * 60); 
+                ep.y += (dy / d) * 5 * (dt * 60);
             }
         } else if (ep.type === 'accel') { 
-            ep.vx *= 1.03; 
-            ep.vy *= 1.03; 
+            let accelFactor = Math.pow(1.03, dt * 60);
+            ep.vx *= accelFactor; 
+            ep.vy *= accelFactor; 
+            ep.x += ep.vx * (dt * 60); 
+            ep.y += ep.vy * (dt * 60);
+        } else if (ep.type === 's-curve') {
+            ep.lifeTime += dt * 8; 
+            let amplitude = 40; 
+            let forwardSpeed = ep.speed * dt * 60;
+            
+            ep.centerX += Math.cos(ep.baseAngle) * forwardSpeed;
+            ep.centerY += Math.sin(ep.baseAngle) * forwardSpeed;
+            
+            let orthX = Math.cos(ep.baseAngle + Math.PI/2) * Math.sin(ep.lifeTime) * amplitude;
+            let orthY = Math.sin(ep.baseAngle + Math.PI/2) * Math.sin(ep.lifeTime) * amplitude;
+            
+            ep.x = ep.centerX + orthX;
+            ep.y = ep.centerY + orthY;
         }
-        ep.x += ep.vx * (dt * 60); 
-        ep.y += ep.vy * (dt * 60);
+
         if (Math.hypot(ep.x - player.x, ep.y - player.y) < player.size / 2 + ep.size) {
             player.hp -= ep.damage; 
+            
+            if (ep.isVampiric && ep.bossId !== undefined) {
+                let boss = enemies.find(e => e.id === ep.bossId);
+                if (boss) {
+                    boss.currentHp = Math.min(boss.maxHp, boss.currentHp + (boss.maxHp * 0.05));
+                }
+            }
+            
             enemyProjectiles.splice(i, 1);
             if (player.hp <= 0 && gameStarted) {
                 handleEndGame(false, false); 
             }
             continue;
         }
-        if (ep.x < -100 || ep.x > canvas.width + 100 || ep.y < -100 || ep.y > canvas.height + 100) {
+        
+        if (ep.x < -200 || ep.x > canvas.width + 200 || ep.y < -200 || ep.y > canvas.height + 200) {
             enemyProjectiles.splice(i, 1);
         }
     }
+    
     for (let pi = projectiles.length - 1; pi >= 0; pi--) {
         let p = projectiles[pi];
         p.x += p.vx * (dt * 60); 
@@ -392,12 +587,20 @@ function update(dt) {
                 } else {
                     p.toRemove = true;
                 }
+                
                 if (en.currentHp <= 0) {
-                    const isBoss = en.type === 'sniperBoss';
+                    const isBoss = (en.type === 'sniperBoss' || en.type === 'octopusBoss');
                     score++; 
                     exp += en.exp; 
                     enemies.splice(ei, 1);
+                    
                     if (isBoss) { 
+                        if (gameMode === 'normal') {
+                            const dropChance = isTrialMode ? 0.8 : 0.6;
+                            if (Math.random() < dropChance) {
+                                runDrops.push(generateRandomEquipment());
+                            }
+                        }
                         handleEndGame(true, false); 
                         return; 
                     } 
@@ -409,6 +612,7 @@ function update(dt) {
             projectiles.splice(pi, 1);
         }
     }
+    
     while (exp >= expToNext) {
         level++; 
         exp -= expToNext; 
@@ -429,6 +633,7 @@ function update(dt) {
             });
         }
     }
+    
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
         floatingTexts[i].y -= 1 * (dt * 60); 
         floatingTexts[i].life--;   
@@ -436,16 +641,23 @@ function update(dt) {
             floatingTexts.splice(i, 1);
         }
     }
+    
     const chapMult = (gameMode === 'normal') ? chapterData[selectedChapter - 1].multiplier : 1;
     const trialMult = (gameMode === 'normal' && isTrialMode) ? 5 : 1;
-    const chaseTrialMult = (gameMode === 'chase_trial') ? 2 : 1;
-    const finalMult = chapMult * trialMult * chaseTrialMult;
+    let trialLevelMult = 1;
+    if (gameMode === 'sniper_trial') trialLevelMult = 1 + (sniperTrialLevel * 0.2);
+    if (gameMode === 'octopus_trial') trialLevelMult = 1 + (octopusTrialLevel * 0.2);
+    if (gameMode === 'chase_trial') trialLevelMult = 1 + (chaseTrialLevel * 0.2);
+    
+    const finalMult = chapMult * trialMult * trialLevelMult;
     const elapsedMins = Math.floor(elapsedSecs / 60);
     const timeMult = (gameMode === 'normal') ? 1 + (0.5 * elapsedMins) : 1;
+    
     enemies.forEach(en => {
         const dx = player.x - en.x;
         const dy = player.y - en.y;
         const dist = Math.hypot(dx, dy);
+        
         if (en.type === 'sniperBoss') {
             const idealDist = 350; 
             const bossMoveStep = en.speed * (dt * 60);
@@ -460,26 +672,105 @@ function update(dt) {
                 en.lastAttack = now; 
                 const angle = Math.atan2(dy, dx);
                 enemyProjectiles.push({ 
-                    x: en.x, 
-                    y: en.y, 
-                    vx: Math.cos(angle) * 4, 
-                    vy: Math.sin(angle) * 4, 
-                    type: 'homing', 
-                    color: '#ff4d4d', 
-                    size: 8, 
-                    damage: 25 * finalMult * timeMult
+                    x: en.x, y: en.y, 
+                    vx: Math.cos(angle) * 4, vy: Math.sin(angle) * 4, 
+                    type: 'homing', color: '#ff4d4d', size: 8, damage: 25 * finalMult * timeMult
                 });
                 for(let i = 0; i < 4; i++) {
                     const sAngle = angle + (i - 1.5) * 0.4;
                     enemyProjectiles.push({ 
-                        x: en.x, 
-                        y: en.y, 
-                        vx: Math.cos(sAngle) * 1.5, 
-                        vy: Math.sin(sAngle) * 1.5, 
-                        type: 'accel', 
-                        color: '#ffff00', 
-                        size: 10, 
-                        damage: 40 * finalMult * timeMult
+                        x: en.x, y: en.y, 
+                        vx: Math.cos(sAngle) * 1.5, vy: Math.sin(sAngle) * 1.5, 
+                        type: 'accel', color: '#ffff00', size: 10, damage: 40 * finalMult * timeMult
+                    });
+                }
+            }
+        } else if (en.type === 'octopusBoss') {
+            if (en.currentHp <= en.maxHp * 0.3) en.phase = Math.max(en.phase || 1, 3);
+            else if (en.currentHp <= en.maxHp * 0.6) en.phase = Math.max(en.phase || 1, 2);
+
+            if (en.isCharging) {
+                en.chargeTimer -= dt;
+                en.color = '#00ff00'; 
+                
+                if (en.chargeTimer <= 0) {
+                    en.isCharging = false;
+                    en.shockwaveActive = true;
+                    en.shockwaveRadius = 0;
+                    en.shockwaveHitPlayer = false;
+                }
+            } else {
+                if (dist > 250) {
+                    en.x += (dx / dist) * en.speed * (dt * 60); 
+                    en.y += (dy / dist) * en.speed * (dt * 60);
+                } else if (dist < 150) {
+                    en.x -= (dx / dist) * en.speed * (dt * 60); 
+                    en.y -= (dy / dist) * en.speed * (dt * 60);
+                }
+
+                if (en.phase >= 3) {
+                    en.color = '#008000'; 
+                } else {
+                    en.color = en.baseColor;
+                }
+
+                if (now - en.lastAttack > 2000) {
+                    en.lastAttack = now;
+                    let bulletColor = en.phase >= 3 ? '#00ff00' : '#ff00ff';
+                    let isVampiric = en.phase >= 3;
+                    
+                    let angleOffset = Math.random() * Math.PI; 
+                    for(let i = 0; i < 8; i++) {
+                        let angle = angleOffset + (i * Math.PI / 4);
+                        enemyProjectiles.push({
+                            x: en.x, y: en.y,
+                            centerX: en.x, centerY: en.y, 
+                            baseAngle: angle,
+                            speed: 3 + (timeMult * 0.5),
+                            type: 's-curve',
+                            lifeTime: 0,
+                            color: bulletColor,
+                            size: 10,
+                            damage: 30 * finalMult * timeMult,
+                            isVampiric: isVampiric,
+                            bossId: en.id
+                        });
+                    }
+                }
+
+                if (en.phase >= 2 && !en.shockwaveActive && Math.random() < 0.005) {
+                    en.isCharging = true;
+                    en.chargeTimer = 1.5; 
+                }
+            }
+
+            if (en.shockwaveActive) {
+                en.shockwaveRadius += 600 * dt; 
+                if (en.shockwaveRadius > 450) {
+                    en.shockwaveActive = false; 
+                }
+                
+                if (!en.shockwaveHitPlayer && dist < en.shockwaveRadius && dist > en.shockwaveRadius - 40) {
+                    en.shockwaveHitPlayer = true;
+                    
+                    let kbAngle = Math.atan2(player.y - en.y, player.x - en.x);
+                    
+                    player.x += Math.cos(kbAngle) * 150 * (dt * 60); 
+                    player.y += Math.sin(kbAngle) * 150 * (dt * 60);
+                    
+                    player.x = Math.max(player.size, Math.min(canvas.width - player.size, player.x));
+                    player.y = Math.max(player.size, Math.min(canvas.height - player.size, player.y));
+                    
+                    player.hp -= 40 * finalMult * timeMult * (dt * 60);
+
+                    let activeBullets = enemyProjectiles.filter(ep => ep.type === 's-curve');
+                    activeBullets.sort((a,b) => Math.hypot(a.x - player.x, a.y - player.y) - Math.hypot(b.x - player.x, b.y - player.y));
+                    
+                    activeBullets.slice(0, 4).forEach(ep => {
+                        ep.type = 'homing';
+                        ep.color = '#ff0000'; 
+                        ep.vx = Math.cos(ep.baseAngle) * 4; 
+                        ep.vy = Math.sin(ep.baseAngle) * 4;
                     });
                 }
             }
@@ -490,6 +781,7 @@ function update(dt) {
                 en.y += (dy / dist) * enemyMoveStep;
             }
         }
+        
         if (dist < player.size / 2 + en.size / 2) { 
             player.hp -= en.damage * dt; 
             if (player.hp <= 0 && gameStarted) {
@@ -498,16 +790,27 @@ function update(dt) {
         }
     });
 }
+
 function draw() {
     ctx.fillStyle = '#050505'; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (!gameStarted) {
         return;
     }
+    
     enemies.forEach(en => { 
+        if (en.shockwaveActive) {
+            ctx.beginPath();
+            ctx.arc(en.x, en.y, en.shockwaveRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(0, 255, 0, ${Math.max(0, 1 - (en.shockwaveRadius / 450))})`; 
+            ctx.lineWidth = 15;
+            ctx.stroke();
+        }
+        
         ctx.fillStyle = en.color; 
         ctx.fillRect(en.x - en.size / 2, en.y - en.size / 2, en.size, en.size); 
     });
+    
     ctx.fillStyle = '#00d2ff'; 
     ctx.shadowBlur = 10; 
     ctx.shadowColor = '#00d2ff';
@@ -515,18 +818,21 @@ function draw() {
         ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
     }
     ctx.shadowBlur = 0;
+    
     projectiles.forEach(p => { 
         ctx.fillStyle = '#fff'; 
         ctx.beginPath(); 
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); 
         ctx.fill(); 
     });
+    
     enemyProjectiles.forEach(ep => { 
         ctx.fillStyle = ep.color; 
         ctx.beginPath(); 
         ctx.arc(ep.x, ep.y, ep.size, 0, Math.PI * 2); 
         ctx.fill(); 
     });
+    
     floatingTexts.forEach(ft => {
         ctx.fillStyle = `rgba(255, 215, 0, ${ft.life / 60})`; 
         ctx.font = 'bold 22px Arial'; 
