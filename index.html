@@ -12,7 +12,7 @@
         <div id="timer-container">00:00</div>
         
         <div id="boss-hp-container" style="display: none;">
-            <div id="boss-name">狙擊手：終極方塊</div>
+            <div id="boss-name"></div>
             <div class="boss-hp-bar-outer">
                 <div id="boss-hp-fill"></div>
             </div>
@@ -72,16 +72,31 @@
                 </div>
             </div>
             
+            <div id="tab-equip" class="tab-content" style="display: none;">
+                <h1 class="game-title">裝備</h1>
+                <div class="equip-stats" id="equip-stats"></div>
+                <div class="equip-grid" id="equipped-slots"></div>
+                <h3 style="margin-top:20px; color:var(--primary); text-align:center;">背包</h3>
+                <div class="inventory-grid" id="inventory-list"></div>
+            </div>
+            
             <div id="tab-trial" class="tab-content" style="display: none;">
                 <h1 class="game-title">試煉</h1>
                 <div class="trial-container">
                     <button class="trial-card" id="show-sniper-trial-btn">
-                        <h4>狙擊手試煉</h4>
+                        <h4>狙擊手試煉 <span class="trial-lvl-badge">Lv.<span id="sniper-trial-lvl-display">1</span></span></h4>
                         <p>直接挑戰強大的狙擊手頭目，測試你的極限。</p>
+                        <span class="trial-reward-text">點擊查看獎勵與詳情</span>
+                    </button>
+                    <button class="trial-card" id="show-octopus-trial-btn">
+                        <h4>八爪魚試煉 <span class="trial-lvl-badge">Lv.<span id="octopus-trial-lvl-display">1</span></span></h4>
+                        <p>面對深淵八爪魚的彈幕與吸血衝擊波生存下來。</p>
+                        <span class="trial-reward-text">點擊查看獎勵與詳情</span>
                     </button>
                     <button class="trial-card" id="show-chase-trial-btn">
-                        <h4>追擊試煉</h4>
+                        <h4>追擊試煉 <span class="trial-lvl-badge">Lv.<span id="chase-trial-lvl-display">1</span></span></h4>
                         <p>在大量衝鋒方塊的圍剿下生存下來。</p>
+                        <span class="trial-reward-text">點擊查看獎勵與詳情</span>
                     </button>
                 </div>
             </div>
@@ -95,16 +110,31 @@
             <div class="nav-item" onclick="switchTab('upgrade')">
                 <span>強化</span>
             </div>
+            <div class="nav-item" onclick="switchTab('equip')">
+                <span>裝備</span>
+            </div>
             <div class="nav-item" onclick="switchTab('trial')">
                 <span>試煉</span>
             </div>
         </div>
     </div>
     
+    <div id="item-modal" class="popup-screen" style="display:none;">
+        <div class="popup-container">
+            <h2 class="popup-title" id="item-modal-name">裝備名稱</h2>
+            <p class="popup-desc" id="item-modal-stats">屬性...</p>
+            <div class="popup-actions">
+                <button id="item-modal-equip-btn" class="option-btn" style="text-align: center;">裝備</button>
+                <button id="item-modal-craft-btn" class="option-btn" style="text-align: center; display: none;">合成更高階</button>
+                <button id="item-modal-close-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">關閉</button>
+            </div>
+        </div>
+    </div>
+
     <div id="sniper-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
             <h2 class="popup-title">狙擊手挑戰</h2>
-            <p class="popup-desc">你將獲得 5 次初始升級機會，然後直接與「狙擊手」進行一對一的對決。祝你好運。</p>
+            <p class="popup-desc" id="sniper-trial-desc"></p>
             <div class="popup-actions">
                 <button id="start-sniper-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
                 <button id="close-sniper-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
@@ -112,10 +142,21 @@
         </div>
     </div>
 
+    <div id="octopus-trial-screen" class="popup-screen" style="display: none;">
+        <div class="popup-container">
+            <h2 class="popup-title">八爪魚挑戰</h2>
+            <p class="popup-desc" id="octopus-trial-desc"></p>
+            <div class="popup-actions">
+                <button id="start-octopus-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
+                <button id="close-octopus-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
+            </div>
+        </div>
+    </div>
+
     <div id="chase-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
             <h2 class="popup-title">追擊挑戰</h2>
-            <p class="popup-desc">你將獲得 3 次初始升級機會，然後面對 140 隻強化衝鋒方塊的猛攻。盡力存活！</p>
+            <p class="popup-desc" id="chase-trial-desc"></p>
             <div class="popup-actions">
                 <button id="start-chase-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
                 <button id="close-chase-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
