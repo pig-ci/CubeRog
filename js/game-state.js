@@ -8,8 +8,8 @@ let gameActive = false;
 let gameStarted = false; 
 let isPaused = false;
 let isTrialMode = false;
-let gameMode = 'normal'; // 新增：遊戲模式 'normal', 'sniper_trial', 'chase_trial'
-let levelUpsPending = 0; // 新增：待處理的升級次數
+let gameMode = 'normal'; // 遊戲模式 'normal', 'sniper_trial', 'chase_trial', 'octopus_trial'
+let levelUpsPending = 0; // 待處理的升級次數
 let score = 0;
 let level = 1;
 let exp = 0;
@@ -35,10 +35,31 @@ let bossSpawned = false;
 let unlockedChapter = parseInt(localStorage.getItem('cubeRPG_unlockedChapter') || 1);
 let selectedChapter = 1;
 
+// --- 試煉等級狀態 ---
+let sniperTrialLevel = parseInt(localStorage.getItem('cubeRPG_sniperTrialLevel') || 1);
+let chaseTrialLevel = parseInt(localStorage.getItem('cubeRPG_chaseTrialLevel') || 1);
+let octopusTrialLevel = parseInt(localStorage.getItem('cubeRPG_octopusTrialLevel') || 1); // 新增八爪魚等級
+
 const chapterData = [
     { id: 1, name: '第一章：方塊森林', multiplier: 1, hasBoss: true },
-    { id: 2, name: '第二章：方塊山谷', multiplier: 3, hasBoss: false }
+    { id: 2, name: '第二章：方塊之海', multiplier: 3, hasBoss: true } // ★ 已更名為方塊之海
 ];
+
+// --- 裝備系統狀態 ---
+let playerInventory = JSON.parse(localStorage.getItem('cubeRPG_inventory')) || [];
+let playerEquipment = JSON.parse(localStorage.getItem('cubeRPG_equipment')) || {
+    weapon: null, helmet: null, armor: null, boots: null, ring: null, amulet: null
+};
+let runDrops = []; // 紀錄單場掉落
+
+const slotNames = { 
+    weapon: '武器', 
+    helmet: '頭盔', 
+    armor: '盔甲', 
+    boots: '鞋子', 
+    ring: '戒指', 
+    amulet: '護身符' 
+};
 
 // --- 數據配置 ---
 const enemyTypes = {
@@ -61,6 +82,11 @@ const enemyTypes = {
         name: '狙擊手', 
         desc: '最終Boss，會保持距離並發射多種追蹤彈藥。',
         color: '#ff0055', size: 65, hp: 25000, speed: 2, damage: 20, exp: 100 
+    },
+    octopusBoss: { 
+        name: '深淵八爪魚', 
+        desc: '會發射8方位的S型彈幕。低血量時會釋放擊退衝擊波，甚至開啟吸血模式！',
+        color: '#8b008b', size: 75, hp: 35000, speed: 1.8, damage: 25, exp: 150 
     }
 };
 
