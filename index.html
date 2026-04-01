@@ -10,26 +10,32 @@
     <div id="game-ui" style="display: none;">
         <div id="exp-bar-container"><div id="exp-fill"></div></div>
         <div id="timer-container">00:00</div>
-        
         <div id="boss-hp-container" style="display: none;">
             <div id="boss-name"></div>
-            <div class="boss-hp-bar-outer">
-                <div id="boss-hp-fill"></div>
+            <div style="display: flex; gap: 10px; justify-content: center; width: 100%;">
+                <div class="boss-hp-bar-outer" style="flex: 1;">
+                    <div id="boss-hp-fill"></div>
+                </div>
+                <div class="boss-hp-bar-outer" id="boss-hp-bar-outer-2" style="flex: 1; display: none;">
+                    <div id="boss-hp-fill-2"></div>
+                </div>
             </div>
         </div>
-
         <div id="ui">
             <div class="player-name">藍色方塊</div>
             <div class="hp-bar-outer"><div id="hp-fill"></div></div>
             <div>等級: <span id="lvl">1</span> | 擊殺: <span id="kills">0</span></div>
         </div>
+        <div id="joystick-area" class="mobile-only">
+            <div id="joystick-base">
+                <div id="joystick-knob"></div>
+            </div>
+        </div>
     </div>
-
     <div id="home-screen">
         <div class="top-bar">
             <div class="currency">💰 <span id="total-gold">0</span></div>
         </div>
-
         <div id="content-area">
             <div id="tab-battle" class="tab-content">
                 <div class="title-container">
@@ -42,7 +48,6 @@
                         </div>
                     </label>
                 </div>
-                
                 <div class="stage-card">
                     <div class="stage-info">
                         <div class="chapter-selector">
@@ -56,7 +61,6 @@
                 </div>
                 <div id="last-run-stats" class="last-stats"></div>
             </div>
-
             <div id="tab-upgrade" class="tab-content" style="display: none;">
                 <h1 class="game-title">強化</h1>
                 <div class="upgrade-container">
@@ -71,7 +75,6 @@
                     </div>
                 </div>
             </div>
-            
             <div id="tab-equip" class="tab-content" style="display: none;">
                 <h1 class="game-title">裝備</h1>
                 <div class="equip-stats" id="equip-stats"></div>
@@ -79,7 +82,6 @@
                 <h3 style="margin-top:20px; color:var(--primary); text-align:center;">背包</h3>
                 <div class="inventory-grid" id="inventory-list"></div>
             </div>
-            
             <div id="tab-trial" class="tab-content" style="display: none;">
                 <h1 class="game-title">試煉</h1>
                 <div class="trial-container">
@@ -93,6 +95,16 @@
                         <p>面對深淵八爪魚的彈幕與吸血衝擊波生存下來。</p>
                         <span class="trial-reward-text">點擊查看獎勵與詳情</span>
                     </button>
+                    <button class="trial-card" id="show-summoner-trial-btn">
+                        <h4>招喚師試煉 <span class="trial-lvl-badge">Lv.<span id="summoner-trial-lvl-display">1</span></span></h4>
+                        <p>挑戰精通召喚與防禦矩陣的頭目，在彈幕與爆炸中存活。</p>
+                        <span class="trial-reward-text">點擊查看獎勵與詳情</span>
+                    </button>
+                    <button class="trial-card" id="show-twin-trial-btn">
+                        <h4>雙子試煉 <span class="trial-lvl-badge" style="background:linear-gradient(90deg, #ff4d4d, #4d4dff);">Lv.<span id="twin-trial-lvl-display">1</span></span></h4>
+                        <p>面對相連且會復活的雙子頭目。走位躲避藍彈，摧毀紅彈！</p>
+                        <span class="trial-reward-text">點擊查看獎勵與詳情</span>
+                    </button>
                     <button class="trial-card" id="show-chase-trial-btn">
                         <h4>追擊試煉 <span class="trial-lvl-badge">Lv.<span id="chase-trial-lvl-display">1</span></span></h4>
                         <p>在大量衝鋒方塊的圍剿下生存下來。</p>
@@ -100,9 +112,7 @@
                     </button>
                 </div>
             </div>
-
         </div>
-
         <div class="nav-bar">
             <div class="nav-item active" onclick="switchTab('battle')">
                 <span>戰役</span>
@@ -118,7 +128,6 @@
             </div>
         </div>
     </div>
-    
     <div id="item-modal" class="popup-screen" style="display:none;">
         <div class="popup-container">
             <h2 class="popup-title" id="item-modal-name">裝備名稱</h2>
@@ -130,7 +139,6 @@
             </div>
         </div>
     </div>
-
     <div id="sniper-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
             <h2 class="popup-title">狙擊手挑戰</h2>
@@ -141,7 +149,6 @@
             </div>
         </div>
     </div>
-
     <div id="octopus-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
             <h2 class="popup-title">八爪魚挑戰</h2>
@@ -152,7 +159,26 @@
             </div>
         </div>
     </div>
-
+    <div id="summoner-trial-screen" class="popup-screen" style="display: none;">
+        <div class="popup-container">
+            <h2 class="popup-title">招喚師挑戰</h2>
+            <p class="popup-desc" id="summoner-trial-desc"></p>
+            <div class="popup-actions">
+                <button id="start-summoner-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
+                <button id="close-summoner-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
+            </div>
+        </div>
+    </div>
+    <div id="twin-trial-screen" class="popup-screen" style="display: none;">
+        <div class="popup-container">
+            <h2 class="popup-title" style="color: #c980ff; text-shadow: 0 0 15px #c980ff;">雙子挑戰</h2>
+            <p class="popup-desc" id="twin-trial-desc"></p>
+            <div class="popup-actions">
+                <button id="start-twin-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
+                <button id="close-twin-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
+            </div>
+        </div>
+    </div>
     <div id="chase-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
             <h2 class="popup-title">追擊挑戰</h2>
@@ -163,23 +189,17 @@
             </div>
         </div>
     </div>
-
     <div id="level-up" style="display: none;">
         <h2 class="upgrade-title">升級選擇</h2>
         <div id="options-container" class="option-column"></div>
     </div>
-
     <div id="pause-menu" style="display: none;">
         <div class="pause-container">
             <h2 class="pause-title">遊戲暫停</h2>
-            
             <div class="pause-upgrades-section">
                 <h3>已獲得升級</h3>
-                <div id="acquired-upgrades-list">
-                    <!-- 動態注入已獲得的升級清單 -->
-                </div>
+                <div id="acquired-upgrades-list"></div>
             </div>
-
             <div class="pause-actions">
                 <button id="resume-btn" class="option-btn" style="text-align: center;">繼續遊戲</button>
                 <button id="restart-btn" class="option-btn" style="text-align: center;">重新開始</button>
@@ -187,12 +207,10 @@
             </div>
         </div>
     </div>
-
     <div id="death-screen">
         <div id="death-banner" class="death-banner">你已死亡</div>
         <div id="win-banner" class="win-banner" style="display: none;">戰役完勝</div>
     </div>
-
     <div id="enemy-banner">
         <div class="banner-content">
             <div class="banner-subtitle">警告：偵測到新威脅</div>
@@ -200,13 +218,14 @@
             <div id="enemy-desc" class="banner-desc"></div>
         </div>
     </div>
-
     <canvas id="gameCanvas"></canvas>
-    
-    <!-- 分割後的 JS 檔案 -->
     <script src="js/dom-elements.js" defer></script>
     <script src="js/game-state.js" defer></script>
     <script src="js/ui-handler.js" defer></script>
+    <script src="js/boss/sniper.js" defer></script>
+    <script src="js/boss/octopus.js" defer></script>
+    <script src="js/boss/summoner.js" defer></script>
+    <script src="js/boss/twin.js" defer></script>
     <script src="js/game-logic.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
