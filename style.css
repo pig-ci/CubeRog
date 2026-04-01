@@ -132,7 +132,7 @@ canvas { display: block; }
     border: 2px solid #555; overflow: hidden; box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-#boss-hp-fill {
+#boss-hp-fill, #boss-hp-fill-2 {
     background: linear-gradient(90deg, #aa0000, #ff0055); width: 100%; height: 100%;
     transition: width 0.1s linear; box-shadow: 0 0 15px #ff0055;
 }
@@ -240,8 +240,25 @@ input:checked + .slider:before { transform: translateX(22px); }
 .rarity-uncommon { border-color: var(--rarity-uncommon) !important; color: var(--rarity-uncommon); text-shadow: 0 0 5px rgba(34, 197, 94, 0.3); }
 .rarity-rare { border-color: var(--rarity-rare) !important; color: var(--rarity-rare); text-shadow: 0 0 8px rgba(0, 210, 255, 0.5); box-shadow: 0 0 10px rgba(0, 210, 255, 0.2); }
 
-/* --- 升級與裝備彈窗 --- */
-#level-up { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-upgrade-popup); padding: 30px; border-radius: 20px; border: 2px solid var(--primary-border); z-index: 200; width: 320px; text-align: center; }
+/* --- 升級與裝備彈窗 (自動適配螢幕尺寸) --- */
+#level-up { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    background: var(--bg-upgrade-popup); 
+    padding: 30px; 
+    border-radius: 20px; 
+    border: 2px solid var(--primary-border); 
+    z-index: 200; 
+    width: 90%; /* 改用百分比自適應寬度 */
+    max-width: 350px; /* 限制最大寬度避免在 PC 太大 */
+    max-height: 85vh; /* 避免橫向手機時溢出螢幕 */
+    overflow-y: auto; /* 若內容過多則滾動 */
+    box-sizing: border-box; /* 確保 padding 不會破壞寬度計算 */
+    text-align: center; 
+}
+
 .upgrade-title { color: var(--primary); margin-bottom: 20px; text-shadow: 0 0 10px var(--primary-glow); }
 .option-column { display: flex; flex-direction: column; gap: 10px; margin: 0 auto; }
 .option-btn { background: var(--bg-card); border: 1px solid var(--border-card); padding: 15px; color: var(--text-white); border-radius: 10px; cursor: pointer; transition: 0.2s; text-align: left; position: relative; }
@@ -251,7 +268,7 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 /* --- 暫停選單 (全螢幕遮罩與面板) --- */
 .popup-screen, #pause-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-overlay); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 250; }
-.popup-container, .pause-container { background: var(--bg-dark); border: 2px solid var(--border-card); border-radius: 20px; width: 90%; max-width: 400px; padding: 30px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; }
+.popup-container, .pause-container { background: var(--bg-dark); border: 2px solid var(--border-card); border-radius: 20px; width: 90%; max-width: 400px; padding: 30px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; box-sizing: border-box; max-height: 85vh; overflow-y: auto;}
 .popup-title, .pause-title { color: var(--primary); font-size: 32px; margin: 0 0 20px 0; text-shadow: 0 0 15px var(--primary-glow); }
 
 /* 裝備視窗標題的品質顏色 */
@@ -283,3 +300,54 @@ input:checked + .slider:before { transform: translateX(22px); }
 .banner-title { font-size: 48px; font-weight: bold; color: var(--text-white); }
 .banner-subtitle { font-size: 20px; color: var(--danger-light); margin-bottom: 5px; font-weight: bold; }
 .banner-desc { font-size: 18px; color: #ccc; margin-top: 10px; }
+
+/* --- 虛擬搖桿樣式 (自適應相對單位) --- */
+.mobile-only {
+    display: none;
+    pointer-events: auto;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .mobile-only {
+        display: block;
+    }
+}
+
+#joystick-area {
+    position: absolute; 
+    bottom: 8vh; /* 依照螢幕高度自適應邊距 */
+    left: 8vw;   /* 依照螢幕寬度自適應邊距 */
+    width: 25vmin; /* 確保寬高一致，根據最短邊動態縮放 */
+    height: 25vmin; 
+    min-width: 100px; /* 避免在極小螢幕縮太小 */
+    min-height: 100px;
+    max-width: 160px; /* 避免在平板被放得太大 */
+    max-height: 160px;
+    z-index: 50; 
+    touch-action: none;
+}
+
+#joystick-base {
+    width: 80%; /* 相對外層動態計算 */
+    height: 80%; 
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid var(--border-card); 
+    border-radius: 50%;
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+}
+
+#joystick-knob {
+    width: 40%; /* 相對底座動態計算 */
+    height: 40%; 
+    background: var(--primary);
+    border-radius: 50%; 
+    position: absolute; 
+    top: 50%; 
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    box-shadow: 0 0 15px var(--primary-glow-intense);
+    pointer-events: none;
+}
