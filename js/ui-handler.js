@@ -1,4 +1,3 @@
-// --- 試煉模式開關事件監聽 ---
 trialModeToggle.addEventListener('change', (e) => {
     isTrialMode = e.target.checked;
     if (isTrialMode) {
@@ -36,7 +35,6 @@ nextChapBtn.onclick = () => {
     } 
 };
 
-// --- 輔助函數：生成 CSS 星星 HTML ---
 function getStarsHTML(starLevel) {
     let html = '<div class="star-container">';
     for(let i = 1; i <= 5; i++) {
@@ -50,12 +48,8 @@ function getStarsHTML(starLevel) {
     return html;
 }
 
-// --- 暫停選單邏輯 ---
 function togglePause() {
-    // 防呆：如果正在升級或顯示敵人警告橫幅，禁止暫停，避免 gameActive 狀態錯亂
-    if (levelUpUI.style.display === 'block' || enemyBanner.style.display === 'flex') {
-        return;
-    }
+    if (levelUpUI.style.display === 'block' || enemyBanner.style.display === 'flex') return;
 
     isPaused = !isPaused;
     
@@ -87,27 +81,12 @@ function togglePause() {
 }
 
 resumeBtn.onclick = togglePause;
+restartBtn.onclick = () => { pauseMenu.style.display = 'none'; isPaused = false; initGame(gameMode); };
+endBattleBtn.onclick = () => { pauseMenu.style.display = 'none'; isPaused = false; handleEndGame(false, true); };
 
-restartBtn.onclick = () => { 
-    pauseMenu.style.display = 'none'; 
-    isPaused = false; 
-    initGame(gameMode); 
-};
-
-endBattleBtn.onclick = () => { 
-    pauseMenu.style.display = 'none'; 
-    isPaused = false; 
-    handleEndGame(false, true); 
-};
-
-// --- 分頁與強化邏輯 ---
 window.switchTab = function(tabName) {
-    document.querySelectorAll('.tab-content').forEach(t => {
-        t.style.display = 'none';
-    });
-    document.querySelectorAll('.nav-item').forEach(n => {
-        n.classList.remove('active');
-    });
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     
     document.getElementById('tab-' + tabName).style.display = 'block';
     
@@ -115,11 +94,8 @@ window.switchTab = function(tabName) {
         event.currentTarget.classList.add('active');
     }
     
-    if(tabName === 'upgrade') {
-        updateUpgradeUI();
-    } else if (tabName === 'equip') {
-        updateEquipmentUI();
-    }
+    if (tabName === 'upgrade') updateUpgradeUI();
+    else if (tabName === 'equip') updateEquipmentUI();
 };
 
 function getUpgradeCost(lvl) { 
@@ -165,56 +141,51 @@ upgradeCubeBtn.onclick = () => {
     }
 };
 
-enemyBanner.onclick = () => { 
-    enemyBanner.style.display = 'none'; 
-    gameActive = true; 
-    lastTime = 0; 
-};
+enemyBanner.onclick = () => { enemyBanner.style.display = 'none'; gameActive = true; lastTime = 0; };
 
-// --- 試煉 UI 邏輯 ---
 function updateTrialUI() {
     sniperTrialLvlDisplay.innerText = sniperTrialLevel;
     chaseTrialLvlDisplay.innerText = chaseTrialLevel;
-    octopusTrialLvlDisplay.innerText = octopusTrialLevel; 
+    octopusTrialLvlDisplay.innerText = octopusTrialLevel;
+    summonerTrialLvlDisplay.innerText = summonerTrialLevel;
+    twinTrialLvlDisplay.innerText = twinTrialLevel;
 }
 
 showSniperTrialBtn.onclick = () => {
     let dropText = sniperTrialLevel % 5 === 0 ? "🎁 <span class='rarity-uncommon'>隨機精良裝備 x1</span>" : "🎁 <span class='rarity-common'>隨機普通裝備 x1</span>";
-    
     sniperTrialDesc.innerHTML = `這是 <strong>Lv.${sniperTrialLevel}</strong> 的狙擊手挑戰。<br>敵人強度提升為 <strong>${(1 + sniperTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，然後直接與「狙擊手」對決。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 2000 金幣<br>${dropText}`;
     sniperTrialScreen.style.display = 'flex';
 };
-closeSniperTrialBtn.onclick = () => {
-    sniperTrialScreen.style.display = 'none';
-};
-startSniperTrialBtn.onclick = () => {
-    sniperTrialScreen.style.display = 'none';
-    initGame('sniper_trial'); 
-};
+closeSniperTrialBtn.onclick = () => { sniperTrialScreen.style.display = 'none'; };
+startSniperTrialBtn.onclick = () => { sniperTrialScreen.style.display = 'none'; initGame('sniper_trial'); };
 
 showOctopusTrialBtn.onclick = () => {
     octopusTrialDesc.innerHTML = `這是 <strong>Lv.${octopusTrialLevel}</strong> 的八爪魚挑戰。<br>敵人強度提升為 <strong>${(1 + octopusTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，然後直接與「深淵八爪魚」對決。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 3000 金幣<br>🎁 <span class='rarity-uncommon'>30%精良</span> / <span class='rarity-common'>70%普通</span> 隨機裝備 x1`;
     octopusTrialScreen.style.display = 'flex';
 };
-closeOctopusTrialBtn.onclick = () => {
-    octopusTrialScreen.style.display = 'none';
-};
-startOctopusTrialBtn.onclick = () => {
-    octopusTrialScreen.style.display = 'none';
-    initGame('octopus_trial'); 
-};
+closeOctopusTrialBtn.onclick = () => { octopusTrialScreen.style.display = 'none'; };
+startOctopusTrialBtn.onclick = () => { octopusTrialScreen.style.display = 'none'; initGame('octopus_trial'); };
 
 showChaseTrialBtn.onclick = () => {
     chaseTrialDesc.innerHTML = `這是 <strong>Lv.${chaseTrialLevel}</strong> 的追擊挑戰。<br>敵人強度提升為 <strong>${(1 + chaseTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 3 次初始升級機會，然後面對 140 隻強化衝鋒方塊的猛攻。盡力存活！<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 1500 金幣`;
     chaseTrialScreen.style.display = 'flex';
 };
-closeChaseTrialBtn.onclick = () => {
-    chaseTrialScreen.style.display = 'none';
+closeChaseTrialBtn.onclick = () => { chaseTrialScreen.style.display = 'none'; };
+startChaseTrialBtn.onclick = () => { chaseTrialScreen.style.display = 'none'; initGame('chase_trial'); };
+
+showSummonerTrialBtn.onclick = () => {
+    summonerTrialDesc.innerHTML = `這是 <strong>Lv.${summonerTrialLevel}</strong> 的招喚師挑戰。<br>敵人強度提升為 <strong>${(1 + summonerTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，然後直接與「招喚師」對決。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 2000 金幣<br>🎁 <span class='rarity-common'>33%普通</span>/<span class='rarity-uncommon'>33%精良</span>/<span class='rarity-rare'>33%稀有</span> 隨機裝備 x1`;
+    summonerTrialScreen.style.display = 'flex';
 };
-startChaseTrialBtn.onclick = () => {
-    chaseTrialScreen.style.display = 'none';
-    initGame('chase_trial');
+closeSummonerTrialBtn.onclick = () => { summonerTrialScreen.style.display = 'none'; };
+startSummonerTrialBtn.onclick = () => { summonerTrialScreen.style.display = 'none'; initGame('summoner_trial'); };
+
+showTwinTrialBtn.onclick = () => {
+    twinTrialDesc.innerHTML = `這是 <strong>Lv.${twinTrialLevel}</strong> 的雙子挑戰。<br>敵人強度提升為 <strong>${(1 + twinTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，面對相連且會復活的雙子頭目。走位躲避藍彈，摧毀紅彈！必須在15秒內將兩者全數擊殺。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 1000 金幣<br>🎁 <span class='rarity-uncommon'>95%精良</span> / <span class='rarity-rare'>5%稀有</span> 隨機裝備 x1`;
+    twinTrialScreen.style.display = 'flex';
 };
+closeTwinTrialBtn.onclick = () => { twinTrialScreen.style.display = 'none'; };
+startTwinTrialBtn.onclick = () => { twinTrialScreen.style.display = 'none'; initGame('twin_trial'); };
 
 function showEnemyBanner(typeKey) {
     const data = enemyTypes[typeKey]; 
@@ -231,14 +202,18 @@ function completeLevelUp() {
     if (levelUpsPending > 0) {
         showLevelUp(); 
     } else {
-        if (gameMode === 'sniper_trial') {
-            createEnemy('sniperBoss'); 
-        } else if (gameMode === 'octopus_trial') {
-            createEnemy('octopusBoss'); 
-        } else if (gameMode === 'chase_trial') {
-            for(let i=0; i<140; i++) {
-                createEnemy('charger'); 
-            }
+        if (gameMode === 'sniper_trial') createEnemy('sniperBoss'); 
+        else if (gameMode === 'octopus_trial') createEnemy('octopusBoss'); 
+        else if (gameMode === 'summoner_trial') createEnemy('summonerBoss');
+        else if (gameMode === 'chase_trial') {
+            for(let i=0; i<140; i++) createEnemy('charger'); 
+        } else if (gameMode === 'twin_trial') {
+            createEnemy('twinBossRed');
+            createEnemy('twinBossBlue');
+            let red = enemies[enemies.length - 2];
+            let blue = enemies[enemies.length - 1];
+            red.partnerId = blue.id;
+            blue.partnerId = red.id;
         }
         gameActive = true;
         lastTime = 0;
@@ -283,24 +258,33 @@ function updateStatsUI() {
     hpFill.style.width = Math.max(0, (player.hp / player.maxHp * 100)) + '%';
     expFill.style.width = (exp / expToNext * 100) + '%';
 
-    const boss = enemies.find(en => en.type === 'sniperBoss' || en.type === 'octopusBoss');
+    const boss = enemies.find(en => en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss');
+    let redTwin = enemies.find(e => e.type === 'twinBossRed');
+    let blueTwin = enemies.find(e => e.type === 'twinBossBlue');
     
-    if (boss) {
-        if (bossHpContainer.style.display === 'none') { 
-            bossHpContainer.style.display = 'block'; 
-            bossNameEl.innerText = boss.name; 
-        }
+    if (redTwin && blueTwin) {
+        bossHpContainer.style.display = 'block';
+        bossNameEl.innerText = "雙子頭目 (紅 / 藍)";
+        // 確保第二條血條容器可見，並更新填充寬度
+        bossHpOuter2.style.display = 'block';
+        bossHpFill.style.width = Math.max(0, (redTwin.currentHp / redTwin.maxHp * 100)) + '%';
+        bossHpFill2.style.width = Math.max(0, (blueTwin.currentHp / blueTwin.maxHp * 100)) + '%';
+        // 根據顏色區分（可選）
+        bossHpFill.style.background = 'linear-gradient(90deg, #aa0000, #ff4d4d)';
+        bossHpFill2.style.background = 'linear-gradient(90deg, #0000aa, #4d4dff)';
+    } else if (boss) {
+        bossHpContainer.style.display = 'block'; 
+        bossNameEl.innerText = boss.name; 
         bossHpFill.style.width = Math.max(0, (boss.currentHp / boss.maxHp * 100)) + '%';
+        bossHpFill.style.background = 'linear-gradient(90deg, #aa0000, #ff0055)';
+        bossHpOuter2.style.display = 'none';
     } else {
         bossHpContainer.style.display = 'none';
     }
 }
 
-// --- 裝備系統 UI 邏輯 ---
 function updateEquipmentUI() {
-    let totalAtk = 0;
-    let totalHp = 0;
-    let totalSpeed = 0;
+    let totalAtk = 0; let totalHp = 0; let totalSpeed = 0;
 
     for (let key in playerEquipment) {
         if (playerEquipment[key]) {
@@ -413,21 +397,17 @@ function craftItem(baseItem) {
     if (baseItem.rarity === 'uncommon') nextRarity = 'rare';
 
     let newItem = generateRandomEquipment(nextRarity, baseItem.slot);
-    // 強制保留原套裝名稱，只改屬性與稀有度
     newItem.baseName = baseItem.baseName;
     newItem.name = (nextRarity === 'rare' ? '稀有 ' : '精良 ') + baseItem.baseName;
     
     playerInventory.push(newItem);
-
     localStorage.setItem('cubeRPG_inventory', JSON.stringify(playerInventory));
     
     updateEquipmentUI();
     showItemModal(newItem, false); 
 }
 
-itemModalCloseBtn.onclick = () => {
-    itemModal.style.display = 'none';
-};
+itemModalCloseBtn.onclick = () => { itemModal.style.display = 'none'; };
 
 itemModalEquipBtn.onclick = () => {
     if (currentSelectedIsEquipped) {
