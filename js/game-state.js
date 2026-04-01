@@ -8,8 +8,8 @@ let gameActive = false;
 let gameStarted = false; 
 let isPaused = false;
 let isTrialMode = false;
-let gameMode = 'normal'; // 遊戲模式 'normal', 'sniper_trial', 'chase_trial', 'octopus_trial'
-let levelUpsPending = 0; // 待處理的升級次數
+let gameMode = 'normal'; 
+let levelUpsPending = 0; 
 let score = 0;
 let level = 1;
 let exp = 0;
@@ -26,8 +26,10 @@ let player = {};
 let projectiles = [];
 let enemies = [];
 let keys = {};
+let joystick = { active: false, dx: 0, dy: 0 }; 
 let enemyProjectiles = []; 
-let floatingTexts = []; 
+let floatingTexts = [];
+let explosions = [];
 let encounteredEnemies = new Set(); 
 let bossSpawned = false; 
 
@@ -38,11 +40,14 @@ let selectedChapter = 1;
 // --- 試煉等級狀態 ---
 let sniperTrialLevel = parseInt(localStorage.getItem('cubeRPG_sniperTrialLevel') || 1);
 let chaseTrialLevel = parseInt(localStorage.getItem('cubeRPG_chaseTrialLevel') || 1);
-let octopusTrialLevel = parseInt(localStorage.getItem('cubeRPG_octopusTrialLevel') || 1); // 新增八爪魚等級
+let octopusTrialLevel = parseInt(localStorage.getItem('cubeRPG_octopusTrialLevel') || 1);
+let summonerTrialLevel = parseInt(localStorage.getItem('cubeRPG_summonerTrialLevel') || 1);
+let twinTrialLevel = parseInt(localStorage.getItem('cubeRPG_twinTrialLevel') || 1);
 
 const chapterData = [
     { id: 1, name: '第一章：方塊森林', multiplier: 1, hasBoss: true },
-    { id: 2, name: '第二章：方塊之海', multiplier: 3, hasBoss: true } // ★ 已更名為方塊之海
+    { id: 2, name: '第二章：方塊之海', multiplier: 3, hasBoss: true },
+    { id: 3, name: '第三章：機械遺跡', multiplier: 5, hasBoss: true }
 ];
 
 // --- 裝備系統狀態 ---
@@ -50,7 +55,7 @@ let playerInventory = JSON.parse(localStorage.getItem('cubeRPG_inventory')) || [
 let playerEquipment = JSON.parse(localStorage.getItem('cubeRPG_equipment')) || {
     weapon: null, helmet: null, armor: null, boots: null, ring: null, amulet: null
 };
-let runDrops = []; // 紀錄單場掉落
+let runDrops = []; 
 
 const slotNames = { 
     weapon: '武器', 
@@ -87,6 +92,31 @@ const enemyTypes = {
         name: '深淵八爪魚', 
         desc: '會發射8方位的S型彈幕。低血量時會釋放擊退衝擊波，甚至開啟吸血模式！',
         color: '#8b008b', size: 75, hp: 35000, speed: 1.8, damage: 25, exp: 150 
+    },
+    summonerBoss: { 
+        name: '招喚師', 
+        desc: '會持續召喚自殺式方塊，並透過核心矩陣保護自己。小心它的電磁脈衝！',
+        color: '#00FFFF', size: 70, hp: 45000, speed: 1.5, damage: 30, exp: 200 
+    },
+    twinBossRed: {
+        name: '紅色雙子', 
+        desc: '雙子頭目之一。發射可被摧毀的追蹤吸血彈，與藍色雙子保持雷射連線。',
+        color: '#ff4d4d', size: 60, hp: 28000, speed: 1.5, damage: 30, exp: 150
+    },
+    twinBossBlue: {
+        name: '藍色雙子', 
+        desc: '雙子頭目之一。發射降低移動速度的藍色彈幕，與紅色雙子保持雷射連線。',
+        color: '#4d4dff', size: 60, hp: 28000, speed: 1.5, damage: 30, exp: 150
+    },
+    suicideMinion: {
+        name: '自殺式方塊',
+        desc: '被召喚出的不穩定能量體，會衝向目標並引爆。',
+        color: '#FF5733', size: 15, hp: 1, speed: 4.7, damage: 0, exp: 0
+    },
+    summonerCore: {
+        name: '防禦核心',
+        desc: '保護著招喚師本體。',
+        color: '#FFFFFF', size: 20, hp: 2000, speed: 0, damage: 10, exp: 0
     }
 };
 
