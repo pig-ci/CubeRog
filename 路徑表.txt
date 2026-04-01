@@ -1,0 +1,14 @@
+ 📄 index.html
+ 📄 style.css
+ 📁 js/
+ ├── 📁 boss/
+ ├───── 📄 sniper.js
+ ├───── 📄 octopus.js
+ ├───── 📄 summoner.js
+ ├───── 📄 twin.js
+ ├── 📄 dom-elements.js
+ ├── 📄 dom-elements.js
+ ├── 📄 game-logic.js
+ ├── 📄 game-state.js
+ ├── 📄 main.js
+ └── 📄 ui-handler.js
