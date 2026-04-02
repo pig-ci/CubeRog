@@ -105,6 +105,11 @@
                         <p>面對相連且會復活的雙子頭目。走位躲避藍彈，摧毀紅彈！</p>
                         <span class="trial-reward-text">點擊查看獎勵與詳情</span>
                     </button>
+                    <button class="trial-card" id="show-prism-trial-btn">
+                        <h4>棱鏡試煉 <span class="trial-lvl-badge">Lv.<span id="prism-trial-lvl-display">1</span></span></h4>
+                        <p>面對隨機出招的雷射頭目，考驗你的閃避技巧。</p>
+                        <span class="trial-reward-text">點擊查看獎勵與詳情</span>
+                    </button>
                     <button class="trial-card" id="show-chase-trial-btn">
                         <h4>追擊試煉 <span class="trial-lvl-badge">Lv.<span id="chase-trial-lvl-display">1</span></span></h4>
                         <p>在大量衝鋒方塊的圍剿下生存下來。</p>
@@ -128,17 +133,19 @@
             </div>
         </div>
     </div>
-    <div id="item-modal" class="popup-screen" style="display:none;">
-        <div class="popup-container">
-            <h2 class="popup-title" id="item-modal-name">裝備名稱</h2>
-            <p class="popup-desc" id="item-modal-stats">屬性...</p>
-            <div class="popup-actions">
-                <button id="item-modal-equip-btn" class="option-btn" style="text-align: center;">裝備</button>
-                <button id="item-modal-craft-btn" class="option-btn" style="text-align: center; display: none;">合成更高階</button>
-                <button id="item-modal-close-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">關閉</button>
-            </div>
+<div id="item-modal" class="popup-screen" style="display:none;">
+    <div class="popup-container">
+        <h2 class="popup-title" id="item-modal-name">裝備名稱</h2>
+        <p class="popup-desc" id="item-modal-stats">屬性...</p>
+        <!-- 新增对比区域 -->
+        <div id="item-modal-compare" style="margin: 10px 0; border-top: 1px solid var(--border-light); padding-top: 10px; width: 100%;"></div>
+        <div class="popup-actions">
+            <button id="item-modal-equip-btn" class="option-btn" style="text-align: center;">裝備</button>
+            <button id="item-modal-craft-btn" class="option-btn" style="text-align: center; display: none;">合成更高階</button>
+            <button id="item-modal-close-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">關閉</button>
         </div>
     </div>
+</div>
     <div id="sniper-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
             <h2 class="popup-title">狙擊手挑戰</h2>
@@ -179,6 +186,16 @@
             </div>
         </div>
     </div>
+    <div id="prism-trial-screen" class="popup-screen" style="display: none;">
+        <div class="popup-container">
+            <h2 class="popup-title">棱鏡挑戰</h2>
+            <p class="popup-desc" id="prism-trial-desc"></p>
+            <div class="popup-actions">
+                <button id="start-prism-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
+                <button id="close-prism-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
+            </div>
+        </div>
+    </div>
     <div id="chase-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
             <h2 class="popup-title">追擊挑戰</h2>
@@ -192,7 +209,19 @@
     <div id="level-up" style="display: none;">
         <h2 class="upgrade-title">升級選擇</h2>
         <div id="options-container" class="option-column"></div>
+    <button id="view-acquired-upgrades-btn" class="option-btn" style="margin-top: 15px; text-align: center;">已獲得的升級</button>
+</div>
+
+<!-- 新增：已获得升级弹窗 -->
+<div id="acquired-upgrades-modal" class="popup-screen" style="display: none;">
+    <div class="popup-container">
+        <h2 class="popup-title">已獲得升級</h2>
+        <div id="acquired-upgrades-modal-list" style="max-height: 300px; overflow-y: auto; width: 100%; margin-bottom: 20px;"></div>
+        <div class="popup-actions">
+            <button id="close-acquired-upgrades-modal-btn" class="option-btn" style="text-align: center;">關閉</button>
+        </div>
     </div>
+</div>
     <div id="pause-menu" style="display: none;">
         <div class="pause-container">
             <h2 class="pause-title">遊戲暫停</h2>
@@ -226,6 +255,7 @@
     <script src="js/boss/octopus.js" defer></script>
     <script src="js/boss/summoner.js" defer></script>
     <script src="js/boss/twin.js" defer></script>
+    <script src="js/boss/prism.js" defer></script>
     <script src="js/game-logic.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
