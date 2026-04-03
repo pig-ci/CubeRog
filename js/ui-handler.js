@@ -112,7 +112,15 @@ function updateUpgradeUI() {
     document.getElementById('atk-bonus').innerText = (cubeLevel - 1) * 20;
     document.getElementById('hp-bonus').innerText = (cubeLevel - 1) * 10;
     
-    upgradeCubeBtn.disabled = (gold < cost);
+    // 达到上限时禁用升级按钮
+    if (cubeLevel >= MAX_CUBE_LEVEL) {
+        upgradeCubeBtn.disabled = true;
+        upgradeCubeBtn.title = "已達到到最高級";
+        upgradeCostDisplay.innerText = "MAX";
+    } else {
+        upgradeCubeBtn.disabled = (gold < cost);
+        upgradeCubeBtn.title = "";
+    }
 }
 
 function updateBestStats() {
@@ -129,6 +137,9 @@ function updateBestStats() {
 }
 
 upgradeCubeBtn.onclick = () => {
+    if (cubeLevel >= MAX_CUBE_LEVEL) {
+        return; // 已达上限
+    }
     const cost = getUpgradeCost(cubeLevel);
     let gold = parseInt(localStorage.getItem('cubeRPG_gold') || 0);
     
@@ -143,49 +154,51 @@ upgradeCubeBtn.onclick = () => {
 
 enemyBanner.onclick = () => { enemyBanner.style.display = 'none'; gameActive = true; lastTime = 0; };
 
+// ---------- 統一的試煉UI更新函數 ----------
 function updateTrialUI() {
-    sniperTrialLvlDisplay.innerText = sniperTrialLevel;
-    chaseTrialLvlDisplay.innerText = chaseTrialLevel;
-    octopusTrialLvlDisplay.innerText = octopusTrialLevel;
-    summonerTrialLvlDisplay.innerText = summonerTrialLevel;
-    twinTrialLvlDisplay.innerText = twinTrialLevel;
+    for (const [key, cfg] of Object.entries(TRIAL_CONFIG)) {
+        const lvlSpan = document.getElementById(cfg.ui.lvlDisplayId);
+        if (lvlSpan) {
+            lvlSpan.innerText = trialLevels[cfg.levelKey];
+        }
+    }
 }
 
-showSniperTrialBtn.onclick = () => {
-    let dropText = sniperTrialLevel % 5 === 0 ? "🎁 <span class='rarity-uncommon'>隨機精良裝備 x1</span>" : "🎁 <span class='rarity-common'>隨機普通裝備 x1</span>";
-    sniperTrialDesc.innerHTML = `這是 <strong>Lv.${sniperTrialLevel}</strong> 的狙擊手挑戰。<br>敵人強度提升為 <strong>${(1 + sniperTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，然後直接與「狙擊手」對決。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 2000 金幣<br>${dropText}`;
-    sniperTrialScreen.style.display = 'flex';
-};
-closeSniperTrialBtn.onclick = () => { sniperTrialScreen.style.display = 'none'; };
-startSniperTrialBtn.onclick = () => { sniperTrialScreen.style.display = 'none'; initGame('sniper_trial'); };
+// ---------- 使用配置動態綁定所有試煉事件 ----------
+function bindAllTrials() {
+    for (const [key, cfg] of Object.entries(TRIAL_CONFIG)) {
+        const screen = document.getElementById(cfg.ui.screenId);
+        const showBtn = document.getElementById(cfg.ui.showBtnId);
+        const startBtn = document.getElementById(cfg.ui.startBtnId);
+        const closeBtn = document.getElementById(cfg.ui.closeBtnId);
+        const descDiv = document.getElementById(cfg.ui.descId);
+        
+        if (!screen || !showBtn) continue;
+        
+        showBtn.onclick = () => {
+            const level = trialLevels[cfg.levelKey];
+            const mult = 1 + level * 0.2;
+            descDiv.innerHTML = cfg.description(level, mult);
+            screen.style.display = 'flex';
+        };
+        
+        closeBtn.onclick = () => {
+            screen.style.display = 'none';
+        };
+        
+        startBtn.onclick = () => {
+            screen.style.display = 'none';
+            initGame(cfg.mode);
+        };
+    }
+}
 
-showOctopusTrialBtn.onclick = () => {
-    octopusTrialDesc.innerHTML = `這是 <strong>Lv.${octopusTrialLevel}</strong> 的八爪魚挑戰。<br>敵人強度提升為 <strong>${(1 + octopusTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，然後直接與「深淵八爪魚」對決。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 3000 金幣<br>🎁 <span class='rarity-uncommon'>30%精良</span> / <span class='rarity-common'>70%普通</span> 隨機裝備 x1`;
-    octopusTrialScreen.style.display = 'flex';
-};
-closeOctopusTrialBtn.onclick = () => { octopusTrialScreen.style.display = 'none'; };
-startOctopusTrialBtn.onclick = () => { octopusTrialScreen.style.display = 'none'; initGame('octopus_trial'); };
-
-showChaseTrialBtn.onclick = () => {
-    chaseTrialDesc.innerHTML = `這是 <strong>Lv.${chaseTrialLevel}</strong> 的追擊挑戰。<br>敵人強度提升為 <strong>${(1 + chaseTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 3 次初始升級機會，然後面對 140 隻強化衝鋒方塊的猛攻。盡力存活！<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 1500 金幣`;
-    chaseTrialScreen.style.display = 'flex';
-};
-closeChaseTrialBtn.onclick = () => { chaseTrialScreen.style.display = 'none'; };
-startChaseTrialBtn.onclick = () => { chaseTrialScreen.style.display = 'none'; initGame('chase_trial'); };
-
-showSummonerTrialBtn.onclick = () => {
-    summonerTrialDesc.innerHTML = `這是 <strong>Lv.${summonerTrialLevel}</strong> 的招喚師挑戰。<br>敵人強度提升為 <strong>${(1 + summonerTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，然後直接與「招喚師」對決。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 2000 金幣<br>🎁 <span class='rarity-common'>33%普通</span>/<span class='rarity-uncommon'>33%精良</span>/<span class='rarity-rare'>33%稀有</span> 隨機裝備 x1`;
-    summonerTrialScreen.style.display = 'flex';
-};
-closeSummonerTrialBtn.onclick = () => { summonerTrialScreen.style.display = 'none'; };
-startSummonerTrialBtn.onclick = () => { summonerTrialScreen.style.display = 'none'; initGame('summoner_trial'); };
-
-showTwinTrialBtn.onclick = () => {
-    twinTrialDesc.innerHTML = `這是 <strong>Lv.${twinTrialLevel}</strong> 的雙子挑戰。<br>敵人強度提升為 <strong>${(1 + twinTrialLevel * 0.2).toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，面對相連且會復活的雙子頭目。走位躲避藍彈，摧毀紅彈！必須在15秒內將兩者全數擊殺。<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵】</span><br>💰 1000 金幣<br>🎁 <span class='rarity-uncommon'>95%精良</span> / <span class='rarity-rare'>5%稀有</span> 隨機裝備 x1`;
-    twinTrialScreen.style.display = 'flex';
-};
-closeTwinTrialBtn.onclick = () => { twinTrialScreen.style.display = 'none'; };
-startTwinTrialBtn.onclick = () => { twinTrialScreen.style.display = 'none'; initGame('twin_trial'); };
+// 執行綁定（需確保DOM已載入）
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindAllTrials);
+} else {
+    bindAllTrials();
+}
 
 function showEnemyBanner(typeKey) {
     const data = enemyTypes[typeKey]; 
@@ -214,6 +227,8 @@ function completeLevelUp() {
             let blue = enemies[enemies.length - 1];
             red.partnerId = blue.id;
             blue.partnerId = red.id;
+        } else if (gameMode === 'prism_trial') {
+            createEnemy('prismBoss');
         }
         gameActive = true;
         lastTime = 0;
@@ -258,18 +273,16 @@ function updateStatsUI() {
     hpFill.style.width = Math.max(0, (player.hp / player.maxHp * 100)) + '%';
     expFill.style.width = (exp / expToNext * 100) + '%';
 
-    const boss = enemies.find(en => en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss');
+    const boss = enemies.find(en => en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss' || en.type === 'prismBoss');
     let redTwin = enemies.find(e => e.type === 'twinBossRed');
     let blueTwin = enemies.find(e => e.type === 'twinBossBlue');
     
     if (redTwin && blueTwin) {
         bossHpContainer.style.display = 'block';
         bossNameEl.innerText = "雙子頭目 (紅 / 藍)";
-        // 確保第二條血條容器可見，並更新填充寬度
         bossHpOuter2.style.display = 'block';
         bossHpFill.style.width = Math.max(0, (redTwin.currentHp / redTwin.maxHp * 100)) + '%';
         bossHpFill2.style.width = Math.max(0, (blueTwin.currentHp / blueTwin.maxHp * 100)) + '%';
-        // 根據顏色區分（可選）
         bossHpFill.style.background = 'linear-gradient(90deg, #aa0000, #ff4d4d)';
         bossHpFill2.style.background = 'linear-gradient(90deg, #0000aa, #4d4dff)';
     } else if (boss) {
@@ -342,21 +355,69 @@ function showItemModal(item, isEquipped) {
     let statsHtml = `部位: ${slotNames[item.slot]}<br><br>`;
     if (item.stats.atk) statsHtml += `攻擊力: +${item.stats.atk}<br>`;
     if (item.stats.hp) statsHtml += `生命值: +${item.stats.hp}<br>`;
-    if (item.stats.speed) statsHtml += `移動速度: +${item.stats.speed}<br>`;
-    
+    if (item.stats.speed) statsHtml += `移動速度: +${item.stats.speed.toFixed(1)}<br>`;
     itemModalStats.innerHTML = statsHtml;
-
+    
+    const compareDiv = document.getElementById('item-modal-compare');
+    if (compareDiv) {
+        if (isEquipped) {
+            compareDiv.innerHTML = '<p style="color: var(--text-muted); margin:0;">🔧 当前装备中</p>';
+        } else {
+            const curEquip = playerEquipment[item.slot];
+            const attrMap = { atk: '攻擊力', hp: '生命值', speed: '移動速度' };
+            
+            if (!curEquip) {
+                compareDiv.innerHTML = `
+                    <div style="font-size:13px; color: var(--text-light); margin-bottom:5px;">📦 當前無裝備，裝備後將獲得：</div>
+                    <div>⚔️ 攻擊力: +${item.stats.atk || 0}</div>
+                    <div>❤️ 生命值: +${item.stats.hp || 0}</div>
+                    <div>👟 移動速度: +${(item.stats.speed || 0).toFixed(1)}</div>
+                `;
+            } else {
+                let compareHtml = '<div style="font-size:13px; color: var(--text-light); margin-bottom:5px;">📊 對比當前裝備：</div>';
+                let hasDiff = false;
+                
+                for (let [key, chinese] of Object.entries(attrMap)) {
+                    const newVal = item.stats[key] || 0;
+                    const curVal = curEquip.stats[key] || 0;
+                    const diff = newVal - curVal;
+                    
+                    if (diff !== 0 || newVal !== 0 || curVal !== 0) {
+                        hasDiff = true;
+                        const diffText = diff > 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+                        const diffColor = diff > 0 ? '#7cfc00' : (diff < 0 ? '#ff8888' : '#aaa');
+                        const curValStr = (key === 'speed') ? curVal.toFixed(1) : Math.floor(curVal);
+                        const newValStr = (key === 'speed') ? newVal.toFixed(1) : Math.floor(newVal);
+                        
+                        compareHtml += `
+                            <div style="margin: 6px 0; font-size:14px;">
+                                ${chinese}: ${curValStr} → ${newValStr}
+                                <span style="color: ${diffColor}; font-weight:bold;"> (${diffText})</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                if (!hasDiff) {
+                    compareHtml += '<div style="color: var(--text-muted);">✨ 屬性與當前裝備完全相同</div>';
+                }
+                
+                compareDiv.innerHTML = compareHtml;
+            }
+        }
+    } else {
+        console.warn('对比区域 #item-modal-compare 未找到，请检查 HTML 结构');
+    }
+    
     if (isEquipped) {
         itemModalEquipBtn.innerText = "卸下";
     } else {
         itemModalEquipBtn.innerText = "裝備";
     }
-
+    
     if (!isEquipped && item.rarity !== 'rare') {
         itemModalCraftBtn.style.display = 'block';
-        
         const identicalCount = playerInventory.filter(i => i.name === item.name && i.rarity === item.rarity).length;
-        
         if (identicalCount >= 3) {
             itemModalCraftBtn.innerText = `合成更高階 (${identicalCount}/3)`;
             itemModalCraftBtn.style.background = 'var(--gold)';
@@ -375,7 +436,7 @@ function showItemModal(item, isEquipped) {
     } else {
         itemModalCraftBtn.style.display = 'none';
     }
-
+    
     itemModal.style.display = 'flex';
 }
 
@@ -428,3 +489,39 @@ itemModalEquipBtn.onclick = () => {
     itemModal.style.display = 'none';
     updateEquipmentUI();
 };
+
+// ---------- 已获得升级弹窗 ----------
+const viewAcquiredBtn = document.getElementById('view-acquired-upgrades-btn');
+const acquiredModal = document.getElementById('acquired-upgrades-modal');
+const acquiredModalList = document.getElementById('acquired-upgrades-modal-list');
+const closeAcquiredModalBtn = document.getElementById('close-acquired-upgrades-modal-btn');
+
+if (viewAcquiredBtn) {
+    viewAcquiredBtn.onclick = () => {
+        acquiredModalList.innerHTML = '';
+        const acquired = runUpgrades.filter(u => u.stars > 0);
+        
+        if (acquired.length === 0) {
+            acquiredModalList.innerHTML = '<p style="color: var(--text-muted); text-align: center;">尚未獲得任何升級</p>';
+        } else {
+            acquired.forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'acquired-item';
+                div.style.margin = '8px 0';
+                div.innerHTML = `
+                    <span style="color: var(--text-white);">${u.name}</span>
+                    ${getStarsHTML(u.stars)}
+                `;
+                acquiredModalList.appendChild(div);
+            });
+        }
+        
+        acquiredModal.style.display = 'flex';
+    };
+}
+
+if (closeAcquiredModalBtn) {
+    closeAcquiredModalBtn.onclick = () => {
+        acquiredModal.style.display = 'none';
+    };
+}
