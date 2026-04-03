@@ -1,3 +1,10 @@
+// 限制玩家速度不超過上限
+function clampPlayerSpeed() {
+    if (player && player.speed > MAX_PLAYER_SPEED) {
+        player.speed = MAX_PLAYER_SPEED;
+    }
+}
+
 function generateRandomEquipment(forcedRarity = null, forcedSlot = null) {
     const slots = ['weapon', 'helmet', 'armor', 'boots', 'ring', 'amulet'];
     const slot = forcedSlot ? forcedSlot : slots[Math.floor(Math.random() * slots.length)];
@@ -80,6 +87,17 @@ function createExplosion(x, y, radius, damage) {
 
 startBtn.onclick = () => initGame('normal');
 
+// ---------- 輔助函數：取得當前試煉倍率 ----------
+function getTrialLevelMult() {
+    for (const [key, cfg] of Object.entries(TRIAL_CONFIG)) {
+        if (gameMode === cfg.mode) {
+            const level = trialLevels[cfg.levelKey];
+            return 1 + level * 0.2;
+        }
+    }
+    return 1;
+}
+
 function initGame(mode = 'normal') {
     gameMode = mode; 
     score = 0; level = 1; exp = 0; expToNext = 6;
@@ -90,7 +108,6 @@ function initGame(mode = 'normal') {
     runUpgrades = baseUpgradePool.map(u => ({ ...u, stars: 0 }));
     bossHpContainer.style.display = 'none';
     bossHpOuter2.style.display = 'none';
-    // 強制重置填充寬度，避免顯示舊數據
     bossHpFill.style.width = '0%';
     bossHpFill2.style.width = '0%';
     bossHpFill.style.width = '100%';
@@ -123,20 +140,31 @@ function initGame(mode = 'normal') {
         bounces: 0, spread: 0, chainBounce: 0,
         debuffs: { slowFireRateUntil: 0, slowMoveSpeedUntil: 0, blueSlowStacks: 0, blueSlowUntil: 0 }
     };
-    
+    clampPlayerSpeed();
     homeScreen.style.display = 'none'; gameUI.style.display = 'block';
     deathScreen.style.display = 'none'; enemyBanner.style.display = 'none';
     pauseMenu.style.display = 'none'; bossHpContainer.style.display = 'none';
     gameStarted = true; 
     
-    if (gameMode === 'sniper_trial' || gameMode === 'octopus_trial' || gameMode === 'summoner_trial' || gameMode === 'twin_trial') {
-        levelUpsPending = 5; level = 5; expToNext += (5 * 4);
-        showLevelUp(); 
-    } else if (gameMode === 'chase_trial') {
-        levelUpsPending = 3; level = 3; expToNext += (3 * 2);
-        showLevelUp();
+    // 試煉初始升級邏輯（使用配置）
+    if (gameMode !== 'normal') {
+        let trialConfig = null;
+        for (const [key, cfg] of Object.entries(TRIAL_CONFIG)) {
+            if (cfg.mode === gameMode) {
+                trialConfig = cfg;
+                break;
+            }
+        }
+        if (trialConfig) {
+            levelUpsPending = trialConfig.initLevelUps;
+            level = trialConfig.initLevel;
+            expToNext += trialConfig.expBonus;
+            showLevelUp();
+        } else {
+            gameActive = true;
+        }
     } else {
-        gameActive = true; 
+        gameActive = true;
     }
     updateStatsUI();
 }
@@ -153,35 +181,32 @@ function handleEndGame(isWin = false, isSurrender = false) {
     bossHpOuter2.style.display = 'none';
     bossHpFill.style.width = '100%';
     bossHpFill2.style.width = '100%';
+    
     if (isWin) {
-        if(gameMode === 'sniper_trial') {
-            earnedGold += 2000;
-            if (sniperTrialLevel % 5 === 0) runDrops.push(generateRandomEquipment('uncommon'));
-            else runDrops.push(generateRandomEquipment('common'));
-            sniperTrialLevel++; localStorage.setItem('cubeRPG_sniperTrialLevel', sniperTrialLevel);
-        } else if (gameMode === 'octopus_trial') {
-            earnedGold += 3000;
-            if (Math.random() < 0.3) runDrops.push(generateRandomEquipment('uncommon'));
-            else runDrops.push(generateRandomEquipment('common'));
-            octopusTrialLevel++; localStorage.setItem('cubeRPG_octopusTrialLevel', octopusTrialLevel);
-        } else if (gameMode === 'summoner_trial') {
-            earnedGold += 2000;
-            const r = Math.random();
-            if (r < 0.33) runDrops.push(generateRandomEquipment('common'));
-            else if (r < 0.66) runDrops.push(generateRandomEquipment('uncommon'));
-            else runDrops.push(generateRandomEquipment('rare'));
-            summonerTrialLevel++; localStorage.setItem('cubeRPG_summonerTrialLevel', summonerTrialLevel);
-        } else if(gameMode === 'chase_trial') {
-            earnedGold += 1500;
-            chaseTrialLevel++; localStorage.setItem('cubeRPG_chaseTrialLevel', chaseTrialLevel);
-        } else if (gameMode === 'twin_trial') {
-            earnedGold += 1000;
-            const r = Math.random();
-            if (r < 0.95) runDrops.push(generateRandomEquipment('uncommon'));
-            else runDrops.push(generateRandomEquipment('rare'));
-            twinTrialLevel++; localStorage.setItem('cubeRPG_twinTrialLevel', twinTrialLevel);
-        } else {
+        // 一般模式獎勵
+        if (gameMode === 'normal') {
             earnedGold += 500 * trialGoldMult;
+        } 
+        // 試煉模式獎勵（使用配置）
+        else {
+            let trialConfig = null;
+            for (const [key, cfg] of Object.entries(TRIAL_CONFIG)) {
+                if (cfg.mode === gameMode) {
+                    trialConfig = cfg;
+                    break;
+                }
+            }
+            if (trialConfig) {
+                earnedGold += trialConfig.goldReward;
+                if (trialConfig.dropLogic) {
+                    const level = trialLevels[trialConfig.levelKey];
+                    const rarity = trialConfig.dropLogic(level);
+                    if (rarity) runDrops.push(generateRandomEquipment(rarity));
+                }
+                // 提升試煉等級並儲存
+                trialLevels[trialConfig.levelKey]++;
+                localStorage.setItem(trialConfig.storageKey, trialLevels[trialConfig.levelKey]);
+            }
         }
 
         if (runDrops.length > 0) {
@@ -232,6 +257,7 @@ function handleEndGame(isWin = false, isSurrender = false) {
             else if (gameMode === 'summoner_trial') runStatusText = isWin ? "【招喚師試煉成功】" : "【招喚師試煉失敗】";
             else if (gameMode === 'chase_trial') runStatusText = isWin ? "【追擊試煉成功】" : "【追擊試煉失敗】";
             else if (gameMode === 'twin_trial') runStatusText = isWin ? "【雙子試煉成功】" : "【雙子試煉失敗】";
+            else if (gameMode === 'prism_trial') runStatusText = isWin ? "【棱鏡試煉成功】" : "【棱鏡試煉失敗】";
             else runStatusText = isWin ? "【戰役完勝】" : "上次戰鬥結算";
 
             let dropText = isWin && runDrops.length > 0 ? `<br>獲得裝備：${runDrops.map(d => `<span class="rarity-${d.rarity}">${d.name}</span>`).join(', ')}` : '';
@@ -255,7 +281,7 @@ function createEnemy(typeKey, options = {}) {
     else { x = canvas.width + 50; y = Math.random() * canvas.height; }
     
     let scaling = 0;
-    if (typeKey === 'tank' || typeKey === 'sniperBoss' || typeKey === 'octopusBoss' || typeKey === 'summonerBoss' || typeKey.startsWith('twinBoss')) {
+    if (typeKey === 'tank' || typeKey === 'sniperBoss' || typeKey === 'octopusBoss' || typeKey === 'summonerBoss' || typeKey.startsWith('twinBoss') || typeKey === 'prismBoss') {
         scaling = level * 50;
     } else {
         scaling = level * 20;
@@ -263,12 +289,7 @@ function createEnemy(typeKey, options = {}) {
     
     const chapMult = (gameMode === 'normal') ? chapterData[selectedChapter - 1].multiplier : 1;
     const trialMult = (gameMode === 'normal' && isTrialMode) ? 5 : 1;
-    let trialLevelMult = 1;
-    if (gameMode === 'sniper_trial') trialLevelMult = 1 + (sniperTrialLevel * 0.2);
-    if (gameMode === 'octopus_trial') trialLevelMult = 1 + (octopusTrialLevel * 0.2);
-    if (gameMode === 'chase_trial') trialLevelMult = 1 + (chaseTrialLevel * 0.2);
-    if (gameMode === 'summoner_trial') trialLevelMult = 1 + (summonerTrialLevel * 0.2);
-    if (gameMode === 'twin_trial') trialLevelMult = 1 + (twinTrialLevel * 0.2);
+    const trialLevelMult = getTrialLevelMult();
     
     const finalMult = chapMult * trialMult * trialLevelMult;
     const elapsedSecs = Math.floor(totalFrames / 60);
@@ -287,6 +308,7 @@ function createEnemy(typeKey, options = {}) {
     else if (typeKey === 'summonerBoss') SummonerBoss.initBoss(newEnemy);
     else if (typeKey === 'summonerCore') SummonerBoss.initCore(newEnemy, options);
     else if (typeKey === 'twinBossRed' || typeKey === 'twinBossBlue') TwinBoss.init(newEnemy, typeKey, data);
+    else if (typeKey === 'prismBoss') PrismBoss.init(newEnemy, options, data);
 
     enemies.push(newEnemy);
 }
@@ -301,7 +323,7 @@ function handleSpawning() {
         bossSpawned = true; enemies = []; 
         if (selectedChapter === 1) createEnemy('sniperBoss'); 
         else if (selectedChapter === 2) createEnemy('octopusBoss'); 
-        else if (selectedChapter === 3) createEnemy('summonerBoss');
+        else if (selectedChapter === 3) createEnemy('summonerBoss'); 
         return; 
     }
     
@@ -388,12 +410,10 @@ function update(dt) {
         let ep = enemyProjectiles[i];
         if (ep.expireTime && now > ep.expireTime) { enemyProjectiles.splice(i, 1); continue; }
 
-        // 如果是雙子專屬子彈，交給 TwinBoss 處理
         if (TwinBoss.handleProjectile(ep, i, dt, now, player, enemyProjectiles)) {
             continue; 
         }
         
-        // 其他原本的主邏輯敵方子彈處理
         if (ep.type === 'homing' || ep.type === 'emp_homing') {
             const dx = player.x - ep.x; const dy = player.y - ep.y; const d = Math.hypot(dx, dy);
             if (ep.vx !== undefined && ep.vy !== undefined) {
@@ -443,7 +463,6 @@ function update(dt) {
             } else { p.toRemove = true; }
         }
 
-        // 交給 TwinBoss 檢查是否抵消紅彈
         if (TwinBoss.checkBulletInterception(p, enemyProjectiles)) {
             p.toRemove = true;
         }
@@ -481,7 +500,7 @@ function update(dt) {
                             if (partner && partner.isDead) { handleEndGame(true, false); return; }
                         }
                     } else {
-                        const isBoss = (en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss');
+                        const isBoss = (en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss' || en.type === 'prismBoss');
                         if (en.type === 'suicideMinion') createExplosion(en.x, en.y, 80, 1000);
                         else if (en.type === 'summonerCore') SummonerBoss.onCoreDeath(en);
                         else { score++; exp += en.exp; }
@@ -534,12 +553,7 @@ function update(dt) {
     
     const chapMult = (gameMode === 'normal') ? chapterData[selectedChapter - 1].multiplier : 1;
     const trialMult = (gameMode === 'normal' && isTrialMode) ? 5 : 1;
-    let trialLevelMult = 1;
-    if (gameMode === 'sniper_trial') trialLevelMult = 1 + (sniperTrialLevel * 0.2);
-    if (gameMode === 'octopus_trial') trialLevelMult = 1 + (octopusTrialLevel * 0.2);
-    if (gameMode === 'chase_trial') trialLevelMult = 1 + (chaseTrialLevel * 0.2);
-    if (gameMode === 'twin_trial') trialLevelMult = 1 + (twinTrialLevel * 0.2);
-    
+    const trialLevelMult = getTrialLevelMult();
     const finalMult = chapMult * trialMult * trialLevelMult;
     const elapsedMins = Math.floor(elapsedSecs / 60);
     const timeMult = (gameMode === 'normal') ? 1 + (0.5 * elapsedMins) : 1;
@@ -556,6 +570,7 @@ function update(dt) {
         else if (en.type === 'summonerBoss') SummonerBoss.updateBoss(en, player, dt, now, finalMult, timeMult, dx, dy, dist);
         else if (en.type === 'summonerCore') SummonerBoss.updateCore(en, dt);
         else if (en.type === 'twinBossRed' || en.type === 'twinBossBlue') TwinBoss.update(en, dt, now, finalMult, timeMult);
+        else if (en.type === 'prismBoss') PrismBoss.update(en, player, dt, now, finalMult, timeMult, dx, dy, dist);
         else {
             if (dist > 0 && !en.isDead) {
                 const enemyMoveStep = en.speed * (dt * 60);
@@ -592,6 +607,9 @@ function draw() {
         if (en.type === 'twinBossRed' || en.type === 'twinBossBlue') {
             TwinBoss.draw(en, ctx, Date.now());
             if (en.isDead) return; 
+        }
+        if (en.type === 'prismBoss') {
+            PrismBoss.draw(en, ctx, Date.now());
         }
         ctx.fillStyle = en.color; ctx.fillRect(en.x - en.size / 2, en.y - en.size / 2, en.size, en.size); 
     });
