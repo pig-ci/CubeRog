@@ -229,6 +229,8 @@ function completeLevelUp() {
             blue.partnerId = red.id;
         } else if (gameMode === 'prism_trial') {
             createEnemy('prismBoss');
+        } else if (gameMode === 'gravity_trial') { // 加入重力試煉的生成邏輯
+            createEnemy('gravityBoss');
         }
         gameActive = true;
         lastTime = 0;
@@ -273,7 +275,8 @@ function updateStatsUI() {
     hpFill.style.width = Math.max(0, (player.hp / player.maxHp * 100)) + '%';
     expFill.style.width = (exp / expToNext * 100) + '%';
 
-    const boss = enemies.find(en => en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss' || en.type === 'prismBoss');
+    // 將 gravityBoss 加入可以顯示血條的名單中
+    const boss = enemies.find(en => en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss' || en.type === 'prismBoss' || en.type === 'gravityBoss');
     let redTwin = enemies.find(e => e.type === 'twinBossRed');
     let blueTwin = enemies.find(e => e.type === 'twinBossBlue');
     
@@ -289,7 +292,13 @@ function updateStatsUI() {
         bossHpContainer.style.display = 'block'; 
         bossNameEl.innerText = boss.name; 
         bossHpFill.style.width = Math.max(0, (boss.currentHp / boss.maxHp * 100)) + '%';
-        bossHpFill.style.background = 'linear-gradient(90deg, #aa0000, #ff0055)';
+        
+        // 可根據 Boss 改顏色，重力為紫色
+        if (boss.type === 'gravityBoss') {
+            bossHpFill.style.background = 'linear-gradient(90deg, #4B0082, #9400D3)';
+        } else {
+            bossHpFill.style.background = 'linear-gradient(90deg, #aa0000, #ff0055)';
+        }
         bossHpOuter2.style.display = 'none';
     } else {
         bossHpContainer.style.display = 'none';
