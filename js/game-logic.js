@@ -81,8 +81,8 @@ function generateRandomEquipment(forcedRarity = null, forcedSlot = null) {
     };
 }
 
-function createExplosion(x, y, radius, damage) {
-    explosions.push({ x: x, y: y, maxRadius: radius, damage: damage, currentRadius: 0, life: 30, hitPlayer: false });
+function createExplosion(x, y, radius, damage, specialEffect = null) {
+    explosions.push({ x: x, y: y, maxRadius: radius, damage: damage, currentRadius: 0, life: 30, hitPlayer: false, specialEffect: specialEffect });
 }
 
 startBtn.onclick = () => initGame('normal');
@@ -138,7 +138,8 @@ function initGame(mode = 'normal') {
         speed: (4.8 * speedMult) + equipSpeed, damage: 40 + bonusAtk + equipAtk,
         fireRate: 450, lastShot: 0, bulletCount: 1, bulletSize: 5, bulletSpeed: 12,
         bounces: 0, spread: 0, chainBounce: 0,
-        debuffs: { slowFireRateUntil: 0, slowMoveSpeedUntil: 0, blueSlowStacks: 0, blueSlowUntil: 0 }
+        debuffs: { slowFireRateUntil: 0, slowMoveSpeedUntil: 0, blueSlowStacks: 0, blueSlowUntil: 0, freezeUntil: 0, freezeImmuneUntil: 0 },
+        gravityState: { active: false, wall: null, vel: 0, isJumping: false, jumpTimer: 0 }
     };
     clampPlayerSpeed();
     homeScreen.style.display = 'none'; gameUI.style.display = 'block';
@@ -200,8 +201,16 @@ function handleEndGame(isWin = false, isSurrender = false) {
                 earnedGold += trialConfig.goldReward;
                 if (trialConfig.dropLogic) {
                     const level = trialLevels[trialConfig.levelKey];
-                    const rarity = trialConfig.dropLogic(level);
-                    if (rarity) runDrops.push(generateRandomEquipment(rarity));
+                    const dropResult = trialConfig.dropLogic(level);
+                    if (dropResult) {
+                        if (typeof dropResult === 'string') {
+                            runDrops.push(generateRandomEquipment(dropResult));
+                        } else if (dropResult.type === 'equip') {
+                            dropResult.rarities.forEach(r => runDrops.push(generateRandomEquipment(r)));
+                        } else if (dropResult.type === 'gold') {
+                            earnedGold += dropResult.amount;
+                        }
+                    }
                 }
                 // 提升試煉等級並儲存
                 trialLevels[trialConfig.levelKey]++;
@@ -258,6 +267,7 @@ function handleEndGame(isWin = false, isSurrender = false) {
             else if (gameMode === 'chase_trial') runStatusText = isWin ? "【追擊試煉成功】" : "【追擊試煉失敗】";
             else if (gameMode === 'twin_trial') runStatusText = isWin ? "【雙子試煉成功】" : "【雙子試煉失敗】";
             else if (gameMode === 'prism_trial') runStatusText = isWin ? "【棱鏡試煉成功】" : "【棱鏡試煉失敗】";
+            else if (gameMode === 'gravity_trial') runStatusText = isWin ? "【重力試煉成功】" : "【重力試煉失敗】";
             else runStatusText = isWin ? "【戰役完勝】" : "上次戰鬥結算";
 
             let dropText = isWin && runDrops.length > 0 ? `<br>獲得裝備：${runDrops.map(d => `<span class="rarity-${d.rarity}">${d.name}</span>`).join(', ')}` : '';
@@ -281,7 +291,7 @@ function createEnemy(typeKey, options = {}) {
     else { x = canvas.width + 50; y = Math.random() * canvas.height; }
     
     let scaling = 0;
-    if (typeKey === 'tank' || typeKey === 'sniperBoss' || typeKey === 'octopusBoss' || typeKey === 'summonerBoss' || typeKey.startsWith('twinBoss') || typeKey === 'prismBoss') {
+    if (typeKey === 'tank' || typeKey === 'sniperBoss' || typeKey === 'octopusBoss' || typeKey === 'summonerBoss' || typeKey.startsWith('twinBoss') || typeKey === 'prismBoss' || typeKey === 'gravityBoss') {
         scaling = level * 50;
     } else {
         scaling = level * 20;
@@ -309,6 +319,7 @@ function createEnemy(typeKey, options = {}) {
     else if (typeKey === 'summonerCore') SummonerBoss.initCore(newEnemy, options);
     else if (typeKey === 'twinBossRed' || typeKey === 'twinBossBlue') TwinBoss.init(newEnemy, typeKey, data);
     else if (typeKey === 'prismBoss') PrismBoss.init(newEnemy, options, data);
+    else if (typeKey === 'gravityBoss') GravityBoss.init(newEnemy, options, data);
 
     enemies.push(newEnemy);
 }
@@ -359,24 +370,32 @@ function update(dt) {
         handleEndGame(true, false); return;
     }
     
-    let moveStep = player.speed * (dt * 60);
-    if (now < player.debuffs.slowMoveSpeedUntil) moveStep *= 0.5;
-    
-    if (player.debuffs.blueSlowStacks > 0) {
-        if (now > player.debuffs.blueSlowUntil) player.debuffs.blueSlowStacks = 0;
-        else moveStep *= (1 - (0.3 * player.debuffs.blueSlowStacks));
-    }
+    let isFrozen = now < player.debuffs.freezeUntil;
 
-    if (joystick.active) {
-        player.x += joystick.dx * moveStep;
-        player.y += joystick.dy * moveStep;
-        player.x = Math.max(player.size / 2, Math.min(canvas.width - player.size / 2, player.x));
-        player.y = Math.max(player.size / 2, Math.min(canvas.height - player.size / 2, player.y));
-    } else {
-        if ((keys['w'] || keys['ArrowUp']) && player.y > player.size / 2) player.y -= moveStep;
-        if ((keys['s'] || keys['ArrowDown']) && player.y < canvas.height - player.size / 2) player.y += moveStep;
-        if ((keys['a'] || keys['ArrowLeft']) && player.x > player.size / 2) player.x -= moveStep;
-        if ((keys['d'] || keys['ArrowRight']) && player.x < canvas.width - player.size / 2) player.x += moveStep;
+    if (!isFrozen) {
+        if (player.gravityState && player.gravityState.active) {
+            GravityBoss.applyPlayerPhysics(player, dt, keys, joystick);
+        } else {
+            let moveStep = player.speed * (dt * 60);
+            if (now < player.debuffs.slowMoveSpeedUntil) moveStep *= 0.5;
+            
+            if (player.debuffs.blueSlowStacks > 0) {
+                if (now > player.debuffs.blueSlowUntil) player.debuffs.blueSlowStacks = 0;
+                else moveStep *= (1 - (0.3 * player.debuffs.blueSlowStacks));
+            }
+
+            if (joystick.active) {
+                player.x += joystick.dx * moveStep;
+                player.y += joystick.dy * moveStep;
+                player.x = Math.max(player.size / 2, Math.min(canvas.width - player.size / 2, player.x));
+                player.y = Math.max(player.size / 2, Math.min(canvas.height - player.size / 2, player.y));
+            } else {
+                if ((keys['w'] || keys['ArrowUp']) && player.y > player.size / 2) player.y -= moveStep;
+                if ((keys['s'] || keys['ArrowDown']) && player.y < canvas.height - player.size / 2) player.y += moveStep;
+                if ((keys['a'] || keys['ArrowLeft']) && player.x > player.size / 2) player.x -= moveStep;
+                if ((keys['d'] || keys['ArrowRight']) && player.x < canvas.width - player.size / 2) player.x += moveStep;
+            }
+        }
     }
     
     const fireRateDebuff = (now < player.debuffs.slowFireRateUntil);
@@ -414,7 +433,69 @@ function update(dt) {
             continue; 
         }
         
-        if (ep.type === 'homing' || ep.type === 'emp_homing') {
+        if (ep.type === 'gravity_cube') {
+            const dx = player.x - ep.x; const dy = player.y - ep.y; const d = Math.hypot(dx, dy);
+            ep.vx += (dx / d) * ep.trackingAccel * (dt * 60); 
+            ep.vy += (dy / d) * ep.trackingAccel * (dt * 60);
+            const currV = Math.hypot(ep.vx, ep.vy);
+            if (currV > ep.speed) { ep.vx = (ep.vx / currV) * ep.speed; ep.vy = (ep.vy / currV) * ep.speed; }
+            ep.x += ep.vx * (dt * 60); ep.y += ep.vy * (dt * 60);
+
+            if (now - ep.spawnTime >= 2000) {
+                createExplosion(ep.x, ep.y, 100, ep.damage, 'gravity_pull');
+                enemyProjectiles.splice(i, 1);
+                continue;
+            }
+        } else if (ep.type === 'gravity_blue_cube') {
+            if (ep.blueState === 'tracking') {
+                const dx = player.x - ep.x; const dy = player.y - ep.y; const d = Math.hypot(dx, dy);
+                ep.vx += (dx / d) * ep.trackingAccel * (dt * 60); 
+                ep.vy += (dy / d) * ep.trackingAccel * (dt * 60);
+                const currV = Math.hypot(ep.vx, ep.vy);
+                if (currV > ep.speed) { ep.vx = (ep.vx / currV) * ep.speed; ep.vy = (ep.vy / currV) * ep.speed; }
+                ep.x += ep.vx * (dt * 60); ep.y += ep.vy * (dt * 60);
+
+                if (now >= ep.stateTimer) {
+                    ep.blueState = 'orbiting';
+                    ep.stateTimer = now + 1000; // 旋轉 1 秒
+                    ep.orbitAngle = Math.atan2(ep.y - player.y, ep.x - player.x);
+                    ep.orbitRadius = Math.max(120, Math.hypot(ep.x - player.x, ep.y - player.y));
+                }
+            } else if (ep.blueState === 'orbiting') {
+                ep.orbitAngle += 3 * dt; // 旋轉角速度
+                ep.orbitRadius += (120 - ep.orbitRadius) * 2 * dt; 
+                ep.x = player.x + Math.cos(ep.orbitAngle) * ep.orbitRadius;
+                ep.y = player.y + Math.sin(ep.orbitAngle) * ep.orbitRadius;
+
+                if (now >= ep.stateTimer) {
+                    ep.blueState = 'aiming';
+                    ep.stateTimer = now + 1000 + (ep.cubeIndex * 300);
+                }
+            } else if (ep.blueState === 'aiming') {
+                ep.laserAngle = Math.atan2(player.y - ep.y, player.x - ep.x);
+                if (now >= ep.stateTimer) {
+                    ep.blueState = 'firing';
+                    ep.stateTimer = now + 300; 
+                }
+            } else if (ep.blueState === 'firing') {
+                const dirX = Math.cos(ep.laserAngle);
+                const dirY = Math.sin(ep.laserAngle);
+                const dx = player.x - ep.x;
+                const dy = player.y - ep.y;
+                const proj = dx * dirX + dy * dirY;
+                const distSq = (dx*dx + dy*dy) - proj*proj;
+                
+                if (proj > 0 && distSq < (player.size/2 + 4) * (player.size/2 + 4)) {
+                    player.hp -= (ep.damage * 3) * dt; 
+                    if (player.hp <= 0 && gameStarted) handleEndGame(false, false);
+                }
+
+                if (now >= ep.stateTimer) {
+                    enemyProjectiles.splice(i, 1);
+                    continue;
+                }
+            }
+        } else if (ep.type === 'homing' || ep.type === 'emp_homing') {
             const dx = player.x - ep.x; const dy = player.y - ep.y; const d = Math.hypot(dx, dy);
             if (ep.vx !== undefined && ep.vy !== undefined) {
                 ep.vx += (dx / d) * 0.2 * (dt * 60); ep.vy += (dy / d) * 0.2 * (dt * 60);
@@ -435,17 +516,43 @@ function update(dt) {
             ep.x = ep.centerX + orthX; ep.y = ep.centerY + orthY;
         }
 
+        // 直接碰撞命中判定
         if (Math.hypot(ep.x - player.x, ep.y - player.y) < player.size / 2 + ep.size) {
-            if (ep.type === 'emp_homing') player.debuffs.slowMoveSpeedUntil = now + 3000;
-            else player.hp -= ep.damage;
-            
-            if (ep.isVampiric && ep.bossId !== undefined) {
-                let boss = enemies.find(e => e.id === ep.bossId);
-                if (boss && !boss.isDead) boss.currentHp = Math.min(boss.maxHp, boss.currentHp + (boss.maxHp * 0.05));
+            if (ep.type === 'gravity_cube') {
+                player.hp -= ep.damage;
+                
+                // 凍結狀態且不疊加，解凍後有 0.5 秒抗凍
+                if (now >= player.debuffs.freezeUntil && now >= player.debuffs.freezeImmuneUntil) {
+                    player.debuffs.freezeUntil = now + 2000; 
+                    player.debuffs.freezeImmuneUntil = now + 2500; 
+                }
+
+                enemyProjectiles.splice(i, 1);
+                if (player.hp <= 0 && gameStarted) handleEndGame(false, false); 
+                continue;
+            } else if (ep.type === 'gravity_blue_cube') {
+                if (ep.blueState === 'tracking' || ep.blueState === 'orbiting') {
+                    player.hp -= ep.damage;
+                    enemyProjectiles.splice(i, 1);
+                    if (player.hp <= 0 && gameStarted) handleEndGame(false, false); 
+                    continue;
+                }
+            } else if (ep.type === 'emp_homing') {
+                player.debuffs.slowMoveSpeedUntil = now + 3000;
+                player.hp -= ep.damage;
+                enemyProjectiles.splice(i, 1);
+                if (player.hp <= 0 && gameStarted) handleEndGame(false, false); 
+                continue;
+            } else {
+                player.hp -= ep.damage;
+                if (ep.isVampiric && ep.bossId !== undefined) {
+                    let boss = enemies.find(e => e.id === ep.bossId);
+                    if (boss && !boss.isDead) boss.currentHp = Math.min(boss.maxHp, boss.currentHp + (boss.maxHp * 0.05));
+                }
+                enemyProjectiles.splice(i, 1);
+                if (player.hp <= 0 && gameStarted && ep.type !== 'emp_homing') handleEndGame(false, false); 
+                continue;
             }
-            enemyProjectiles.splice(i, 1);
-            if (player.hp <= 0 && gameStarted && ep.type !== 'emp_homing') handleEndGame(false, false); 
-            continue;
         }
         
         if (ep.x < -200 || ep.x > canvas.width + 200 || ep.y < -200 || ep.y > canvas.height + 200) enemyProjectiles.splice(i, 1);
@@ -500,7 +607,7 @@ function update(dt) {
                             if (partner && partner.isDead) { handleEndGame(true, false); return; }
                         }
                     } else {
-                        const isBoss = (en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss' || en.type === 'prismBoss');
+                        const isBoss = (en.type === 'sniperBoss' || en.type === 'octopusBoss' || en.type === 'summonerBoss' || en.type === 'prismBoss' || en.type === 'gravityBoss');
                         if (en.type === 'suicideMinion') createExplosion(en.x, en.y, 80, 1000);
                         else if (en.type === 'summonerCore') SummonerBoss.onCoreDeath(en);
                         else { score++; exp += en.exp; }
@@ -534,17 +641,40 @@ function update(dt) {
     }
     
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
-        floatingTexts[i].y -= 1 * (dt * 60); floatingTexts[i].life--;   
+        // 如果是箭頭特效，不往上飄
+        if (!floatingTexts[i].isArrow) {
+            floatingTexts[i].y -= 1 * (dt * 60); 
+        }
+        floatingTexts[i].life--;   
         if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
     }
 
     for (let i = explosions.length - 1; i >= 0; i--) {
         let exp = explosions[i];
         exp.life--; exp.currentRadius += exp.maxRadius / 30;
+        
+        if (exp.specialEffect === 'gravity_pull') {
+            const dx = exp.x - player.x;
+            const dy = exp.y - player.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < exp.currentRadius * 1.5) { 
+                player.x += (dx / Math.max(1, dist)) * 250 * dt;
+                player.y += (dy / Math.max(1, dist)) * 250 * dt;
+            }
+        }
+
         if (!exp.hitPlayer) {
             const dist = Math.hypot(player.x - exp.x, player.y - exp.y);
             if (dist < exp.currentRadius) {
                 player.hp -= exp.damage; exp.hitPlayer = true;
+                
+                if (exp.specialEffect === 'gravity_pull') {
+                    if (now >= player.debuffs.freezeUntil && now >= player.debuffs.freezeImmuneUntil) {
+                        player.debuffs.freezeUntil = now + 300; 
+                        player.debuffs.freezeImmuneUntil = now + 800; // 0.3秒凍結 + 0.5秒抗凍
+                    }
+                }
+                
                 if (player.hp <= 0 && gameStarted) handleEndGame(false, false);
             }
         }
@@ -571,6 +701,7 @@ function update(dt) {
         else if (en.type === 'summonerCore') SummonerBoss.updateCore(en, dt);
         else if (en.type === 'twinBossRed' || en.type === 'twinBossBlue') TwinBoss.update(en, dt, now, finalMult, timeMult);
         else if (en.type === 'prismBoss') PrismBoss.update(en, player, dt, now, finalMult, timeMult, dx, dy, dist);
+        else if (en.type === 'gravityBoss') GravityBoss.update(en, player, dt, now, finalMult, timeMult, dx, dy, dist);
         else {
             if (dist > 0 && !en.isDead) {
                 const enemyMoveStep = en.speed * (dt * 60);
@@ -584,8 +715,10 @@ function update(dt) {
                     createExplosion(en.x, en.y, 80, 1000); enemiesToRemoveById.add(en.id);
                 }
             } else if (dist < player.size / 2 + en.size / 2) { 
-                player.hp -= en.damage * dt; 
-                if (player.hp <= 0 && gameStarted) handleEndGame(false, false); 
+                if (en.type !== 'gravityBoss') { 
+                    player.hp -= en.damage * dt; 
+                    if (player.hp <= 0 && gameStarted) handleEndGame(false, false); 
+                }
             }
         }
     });
@@ -599,7 +732,13 @@ function draw() {
     
     explosions.forEach(exp => {
         ctx.beginPath(); ctx.arc(exp.x, exp.y, exp.currentRadius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 87, 51, ${(exp.life / 30) * 0.7})`; ctx.fill();
+        
+        if (exp.specialEffect === 'gravity_pull') {
+            ctx.fillStyle = `rgba(148, 0, 211, ${(exp.life / 30) * 0.7})`; 
+        } else {
+            ctx.fillStyle = `rgba(255, 87, 51, ${(exp.life / 30) * 0.7})`; 
+        }
+        ctx.fill();
     });
 
     enemies.forEach(en => { 
@@ -611,19 +750,85 @@ function draw() {
         if (en.type === 'prismBoss') {
             PrismBoss.draw(en, ctx, Date.now());
         }
+        if (en.type === 'gravityBoss') {
+            GravityBoss.draw(en, ctx, Date.now());
+        }
         ctx.fillStyle = en.color; ctx.fillRect(en.x - en.size / 2, en.y - en.size / 2, en.size, en.size); 
     });
     
     let playerColor = '#00d2ff'; const now = Date.now();
-    if (now < player.debuffs?.slowFireRateUntil) playerColor = '#87CEEB';
-    if (now < player.debuffs?.slowMoveSpeedUntil) playerColor = '#9370DB';
-    if (player.debuffs?.blueSlowStacks > 0) playerColor = '#4d4dff';
+    if (now < player.debuffs?.freezeUntil) playerColor = '#ffffff'; // 凍結時變白
+    else if (now < player.debuffs?.slowFireRateUntil) playerColor = '#87CEEB';
+    else if (now < player.debuffs?.slowMoveSpeedUntil) playerColor = '#9370DB';
+    else if (player.debuffs?.blueSlowStacks > 0) playerColor = '#4d4dff';
 
     ctx.fillStyle = playerColor; ctx.shadowBlur = 10; ctx.shadowColor = playerColor;
     if (player.x) ctx.fillRect(player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
     ctx.shadowBlur = 0;
     
     projectiles.forEach(p => { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); });
-    enemyProjectiles.forEach(ep => { ctx.fillStyle = ep.color; ctx.beginPath(); ctx.arc(ep.x, ep.y, ep.size, 0, Math.PI * 2); ctx.fill(); });
-    floatingTexts.forEach(ft => { ctx.fillStyle = `rgba(255, 215, 0, ${ft.life / 60})`; ctx.font = 'bold 22px Arial'; ctx.fillText(ft.text, ft.x, ft.y); });
+    
+    enemyProjectiles.forEach(ep => { 
+        if (ep.type === 'gravity_cube') {
+            ctx.fillStyle = ep.color; 
+            ctx.fillRect(ep.x - ep.size/2, ep.y - ep.size/2, ep.size, ep.size);
+        } else if (ep.type === 'gravity_blue_cube') {
+            ctx.fillStyle = ep.color; 
+            ctx.fillRect(ep.x - ep.size/2, ep.y - ep.size/2, ep.size, ep.size);
+
+            // 繪製瞄準線或細雷射
+            if (ep.blueState === 'aiming') {
+                ctx.beginPath();
+                ctx.moveTo(ep.x, ep.y);
+                ctx.lineTo(ep.x + Math.cos(ep.laserAngle) * 2000, ep.y + Math.sin(ep.laserAngle) * 2000);
+                ctx.strokeStyle = 'rgba(0, 191, 255, 0.3)';
+                ctx.lineWidth = 1; 
+                ctx.stroke();
+            } else if (ep.blueState === 'firing') {
+                ctx.beginPath();
+                ctx.moveTo(ep.x, ep.y);
+                ctx.lineTo(ep.x + Math.cos(ep.laserAngle) * 2000, ep.y + Math.sin(ep.laserAngle) * 2000);
+                ctx.strokeStyle = 'rgba(0, 191, 255, 0.9)';
+                ctx.lineWidth = 5; 
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00BFFF';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+        } else {
+            ctx.fillStyle = ep.color; ctx.beginPath(); ctx.arc(ep.x, ep.y, ep.size, 0, Math.PI * 2); ctx.fill(); 
+        }
+    });
+    
+    floatingTexts.forEach(ft => { 
+        if (ft.isArrow) {
+            ctx.save();
+            ctx.translate(ft.x, ft.y);
+            ctx.rotate(ft.angle);
+            
+            // 放大 SVG 尺寸以便於觀看 (放大 4 倍)
+            ctx.scale(4, 4);
+            // 將畫筆的圓心移至 24x24 的 SVG 中央
+            ctx.translate(-12, -12);
+
+            // 設定箭頭樣式與紫色特效 (並隨時間淡出)
+            ctx.strokeStyle = `rgba(148, 0, 211, ${Math.min(1, ft.life / 30)})`;
+            ctx.lineWidth = 2;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            
+            // 利用 Path2D 繪製指定路徑
+            const p1 = new Path2D("M18 8L22 12L18 16");
+            const p2 = new Path2D("M2 12H22");
+            
+            ctx.stroke(p1);
+            ctx.stroke(p2);
+            
+            ctx.restore();
+        } else {
+            ctx.fillStyle = `rgba(255, 215, 0, ${ft.life / 60})`; 
+            ctx.font = 'bold 22px Arial'; 
+            ctx.fillText(ft.text, ft.x, ft.y); 
+        }
+    });
 }
