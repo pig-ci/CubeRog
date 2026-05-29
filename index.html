@@ -116,6 +116,12 @@
                         <p>在大量衝鋒方塊的圍剿下生存下來。</p>
                         <span class="trial-reward-text">點擊查看獎勵與詳情</span>
                     </button>
+                    <!-- 重力試煉 -->
+                    <button class="trial-card" id="show-gravity-trial-btn">
+                        <h4>重力試煉 <span class="trial-lvl-badge" style="background: #9400D3;">Lv.<span id="gravity-trial-lvl-display">1</span></span></h4>
+                        <p>挑戰會改變空間重力的頭目，適應在牆上跳躍的極限戰鬥！</p>
+                        <span class="trial-reward-text">點擊查看獎勵與詳情</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -149,7 +155,7 @@
 </div>
     <div id="sniper-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
-            <h2 class="popup-title">狙擊手挑戰</h2>
+            <h2 class="popup-title">狙擊手試煉</h2>
             <p class="popup-desc" id="sniper-trial-desc"></p>
             <div class="popup-actions">
                 <button id="start-sniper-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
@@ -159,7 +165,7 @@
     </div>
     <div id="octopus-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
-            <h2 class="popup-title">八爪魚挑戰</h2>
+            <h2 class="popup-title">八爪魚試煉</h2>
             <p class="popup-desc" id="octopus-trial-desc"></p>
             <div class="popup-actions">
                 <button id="start-octopus-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
@@ -169,7 +175,7 @@
     </div>
     <div id="summoner-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
-            <h2 class="popup-title">招喚師挑戰</h2>
+            <h2 class="popup-title">招喚師試煉</h2>
             <p class="popup-desc" id="summoner-trial-desc"></p>
             <div class="popup-actions">
                 <button id="start-summoner-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
@@ -189,7 +195,7 @@
     </div>
     <div id="prism-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
-            <h2 class="popup-title">棱鏡挑戰</h2>
+            <h2 class="popup-title">棱鏡試煉</h2>
             <p class="popup-desc" id="prism-trial-desc"></p>
             <div class="popup-actions">
                 <button id="start-prism-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
@@ -199,11 +205,22 @@
     </div>
     <div id="chase-trial-screen" class="popup-screen" style="display: none;">
         <div class="popup-container">
-            <h2 class="popup-title">追擊挑戰</h2>
+            <h2 class="popup-title">追擊試煉</h2>
             <p class="popup-desc" id="chase-trial-desc"></p>
             <div class="popup-actions">
                 <button id="start-chase-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
                 <button id="close-chase-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
+            </div>
+        </div>
+    </div>
+    <!-- 重力挑戰彈窗 -->
+    <div id="gravity-trial-screen" class="popup-screen" style="display: none;">
+        <div class="popup-container">
+            <h2 class="popup-title">重力試煉</h2>
+            <p class="popup-desc" id="gravity-trial-desc"></p>
+            <div class="popup-actions">
+                <button id="start-gravity-trial-btn" class="option-btn" style="text-align: center;">挑戰</button>
+                <button id="close-gravity-trial-btn" class="option-btn danger-btn" style="text-align: center; margin-top: 10px;">返回</button>
             </div>
         </div>
     </div>
@@ -257,6 +274,7 @@
     <script src="js/boss/summoner.js" defer></script>
     <script src="js/boss/twin.js" defer></script>
     <script src="js/boss/prism.js" defer></script>
+    <script src="js/boss/gravity.js" defer></script>
     <script src="js/game-logic.js" defer></script>
     <script src="js/main.js" defer></script>
     <script src="js/devMode.js" defer></script>
