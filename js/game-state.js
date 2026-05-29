@@ -44,7 +44,8 @@ let trialLevels = {
     octopusTrialLevel: parseInt(localStorage.getItem('cubeRPG_octopusTrialLevel') || 1),
     summonerTrialLevel: parseInt(localStorage.getItem('cubeRPG_summonerTrialLevel') || 1),
     twinTrialLevel: parseInt(localStorage.getItem('cubeRPG_twinTrialLevel') || 1),
-    prismTrialLevel: parseInt(localStorage.getItem('cubeRPG_prismTrialLevel') || 1)
+    prismTrialLevel: parseInt(localStorage.getItem('cubeRPG_prismTrialLevel') || 1),
+    gravityTrialLevel: parseInt(localStorage.getItem('cubeRPG_gravityTrialLevel') || 1)
 };
 
 // --- 試煉統一配置表 ---
@@ -165,6 +166,38 @@ const TRIAL_CONFIG = {
             descId: 'prism-trial-desc'
         }
     },
+    gravity: {
+        mode: 'gravity_trial',
+        displayName: '重力試煉',
+        goldReward: 0, // 取消保底金幣
+        levelKey: 'gravityTrialLevel',
+        storageKey: 'cubeRPG_gravityTrialLevel',
+        initLevelUps: 5,
+        initLevel: 5,
+        expBonus: 5 * 4,
+        dropLogic: () => {
+            const r = Math.random();
+            // 10% 稀有x1
+            if (r < 0.10) return { type: 'equip', rarities: ['rare'] };
+            // 20% 精良x2 (0.10 ~ 0.30)
+            if (r < 0.30) return { type: 'equip', rarities: ['uncommon', 'uncommon'] };
+            // 30% 普通x4 (0.30 ~ 0.60)
+            if (r < 0.60) return { type: 'equip', rarities: ['common', 'common', 'common', 'common'] };
+            // 40% 金幣 20000 (0.60 ~ 1.00)
+            return { type: 'gold', amount: 20000 };
+        },
+        description: (level, mult) => {
+            return `這是 <strong>Lv.${level}</strong> 的重力挑戰。<br>敵人強度提升為 <strong>${mult.toFixed(1)} 倍</strong>！<br><br>你將獲得 5 次初始升級機會，挑戰能改變重力的頭目！<br><br><span style="color:var(--gold); font-weight:bold;">【通關獎勵抽獎】</span><br>🎁 <span class='rarity-rare'>10% 稀有裝備x1</span> / <span class='rarity-uncommon'>20% 精良裝備x2</span><br>🎁 <span class='rarity-common'>30% 普通裝備x4</span> / <span style='color:gold;'>40% 獲得兩萬金幣</span>`;
+        },
+        ui: {
+            screenId: 'gravity-trial-screen',
+            showBtnId: 'show-gravity-trial-btn',
+            startBtnId: 'start-gravity-trial-btn',
+            closeBtnId: 'close-gravity-trial-btn',
+            lvlDisplayId: 'gravity-trial-lvl-display',
+            descId: 'gravity-trial-desc'
+        }
+    },
     chase: {
         mode: 'chase_trial',
         displayName: '追擊試煉',
@@ -239,12 +272,12 @@ const enemyTypes = {
     },
     twinBossRed: {
         name: '紅色雙子', 
-        desc: '雙子頭目之一。發射可被摧毀的追蹤吸血彈，與藍色雙子保持雷射連線。',
+        desc: '雙子頭目之一。發射可被摧毀的追蹤吸血彈。',
         color: '#ff4d4d', size: 60, hp: 28000, speed: 1.5, damage: 30, exp: 150
     },
     twinBossBlue: {
         name: '藍色雙子', 
-        desc: '雙子頭目之一。發射降低移動速度的藍色彈幕，與紅色雙子保持雷射連線。',
+        desc: '雙子頭目之一。發射降低移動速度的藍色彈幕。',
         color: '#4d4dff', size: 60, hp: 28000, speed: 1.5, damage: 30, exp: 150
     },
     suicideMinion: {
@@ -261,6 +294,11 @@ const enemyTypes = {
         name: '棱鏡',
         desc: '隨機出招的雷射系頭目，會使用多種雷射攻擊。',
         color: '#ff44ff', size: 70, hp: 35000, speed: 0, damage: 30, exp: 200
+    },
+    gravityBoss: {
+        name: '重力',
+        desc: '能隨機改變空間的重力，讓你掉落至牆上。',
+        color: '#8A2BE2', size: 65, hp: 50000, speed: 2, damage: 0, exp: 200 
     }
 };
 const baseUpgradePool = [
